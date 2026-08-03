@@ -1,6 +1,5 @@
 import 'package:just_audio/just_audio.dart';
 import 'dart:async';
-import 'package:Rusic/managers/settings_manager.dart';
 
 class AudioManager {
   // Singleton Logic

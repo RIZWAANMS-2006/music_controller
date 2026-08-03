@@ -59,10 +59,9 @@ class SongsManager extends ChangeNotifier {
     if (duration == Duration.zero) return;
 
     final skipAtBeginning = int.tryParse(SettingsManager.skipAtBeginning.value) ?? 0;
-    final skipAtEnd = int.tryParse(SettingsManager.skipAtEnd.value) ?? 10;
+    final skipAtEnd = int.tryParse(SettingsManager.skipAtEnd.value) ?? 0;
     final playHighlights = SettingsManager.playHighlights.value;
     final highlightsDuration = int.tryParse(SettingsManager.highlightsDuration.value) ?? 30;
-    final crossfade = SettingsManager.crossfadeDuration.value;
 
     int effectiveEndMs = duration.inMilliseconds;
 
@@ -77,12 +76,21 @@ class SongsManager extends ChangeNotifier {
       }
     }
 
-    int nextSongTriggerMs = effectiveEndMs;
-    if (crossfade > 0) {
-      nextSongTriggerMs -= (crossfade * 1000).toInt();
+    if (effectiveEndMs <= 0) return;
+
+    // Safety guard: never trigger a transition in the first 10 seconds.
+    // This prevents false early triggers when just_audio hasn't fully read
+    // the file's duration from metadata yet and temporarily reports a very
+    // small/incorrect duration value.
+    if (pos.inSeconds < 10) return;
+
+    // DEBUG: print every second to trace values
+    if (pos.inMilliseconds % 1000 < 200) {
+      debugPrint('[SongsManager] pos=${pos.inSeconds}s | duration=${duration.inSeconds}s | skipAtEnd=${skipAtEnd}s | effectiveEnd=${effectiveEndMs ~/ 1000}s | highlights=$playHighlights');
     }
 
-    if (pos.inMilliseconds >= nextSongTriggerMs && nextSongTriggerMs > 0) {
+    if (pos.inMilliseconds >= effectiveEndMs) {
+      debugPrint('[SongsManager] ▶▶ Triggering next song at pos=${pos.inSeconds}s (effectiveEnd=${effectiveEndMs ~/ 1000}s)');
       _isTransitioning = true;
       await playNext(isAutoPlay: true);
       _isTransitioning = false;

@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:Rusic/managers/ui_manager.dart';
 import 'dart:io';
-import 'package:Rusic/search/search_page.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:Rusic/managers/songs_manager.dart';
 import 'package:Rusic/managers/database_manager.dart';
@@ -368,17 +367,21 @@ class _MediaUIState extends State<MediaUI> {
           // Bottom gradient fade
           Positioned(
             bottom: 0,
-            child: Container(
-              height: 100,
-              width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
-                    Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.9)
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+            child: IgnorePointer(
+              child: Container(
+                height: 100,
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
+                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
+                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 1),
+                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 2),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
                 ),
               ),
             ),
@@ -469,17 +472,20 @@ class _MediaUIState extends State<MediaUI> {
         // Bottom gradient fade
         Positioned(
           bottom: 0,
-          child: Container(
-            height: 100,
-            width: MediaQuery.of(context).size.width,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
+          child: IgnorePointer(
+            child: Container(
+              height: 100,
+              width: MediaQuery.of(context).size.width,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
                     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
-                    Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.9)
+                    Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
+                    Theme.of(context).scaffoldBackgroundColor,
                   ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
           ),
@@ -1179,17 +1185,20 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
           // Bottom gradient fade
           Positioned(
             bottom: 0,
-            child: Container(
-              height: 100,
-              width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
-                    Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.9)
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+            child: IgnorePointer(
+              child: Container(
+                height: 100,
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
+                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
+                      Theme.of(context).scaffoldBackgroundColor,
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
                 ),
               ),
             ),
@@ -1258,17 +1267,20 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
           // Bottom gradient fade
           Positioned(
             bottom: 0,
-            child: Container(
-              height: 100,
-              width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
-                    Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.9)
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+            child: IgnorePointer(
+              child: Container(
+                height: 100,
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
+                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
+                      Theme.of(context).scaffoldBackgroundColor,
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
                 ),
               ),
             ),

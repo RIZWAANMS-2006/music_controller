@@ -14,6 +14,7 @@ import 'package:Rusic/managers/settings_manager.dart';
 import 'package:Rusic/managers/database_manager.dart';
 import 'package:Rusic/managers/ui_manager.dart';
 import 'package:toastification/toastification.dart';
+import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
 Future<void> main() async {
   // Initialize JustAudioMediaKit And Flutter Bindings
@@ -65,22 +66,27 @@ Future<void> main() async {
 int navigationIndex = 1;
 
 // Bottom Navigation Bar Items
-List<Widget> navigationBarDestinationsItems = [
-  const NavigationDestination(icon: Icon(Icons.search), label: "Search"),
-  // NavigationDestination(
-  //   icon: Transform.scale(
-  //     scale: 1.05,
-  //     child: SvgPicture.asset(
-  //       "assets/MusicIcons/music_logo.svg",
-  //       height: 25,
-  //       width: 25,
-  //       color: const Color.fromRGBO(216, 194, 192, 1),
-  //     ),
-  //   ),
-  //   label: "Home",
-  // ),
-  const NavigationDestination(icon: Icon(Icons.music_note), label: "Home"),
-  const NavigationDestination(icon: Icon(Icons.settings), label: "Settings"),
+// List<Widget> navigationBarDestinationsItems = [
+//   const NavigationDestination(icon: Icon(Icons.search), label: "Search"),
+//   const NavigationDestination(icon: Icon(Icons.music_note), label: "Home"),
+//   const NavigationDestination(icon: Icon(Icons.settings), label: "Settings"),
+// ];
+
+List<SalomonBottomBarItem> navigationBarDestinationsItems = [
+  SalomonBottomBarItem(
+    icon: const Icon(Icons.search),
+    title: const Text("Search"),
+  ),
+
+  SalomonBottomBarItem(
+    icon: const Icon(Icons.home),
+    title: const Text("Home"),
+  ),
+
+  SalomonBottomBarItem(
+    icon: const Icon(Icons.settings),
+    title: const Text("Settings"),
+  ),
 ];
 
 // Navigation Rail Destinations
@@ -269,8 +275,29 @@ class CompactScreen extends StatefulWidget {
 }
 
 class CompactScreenState extends State<CompactScreen> {
+  final GlobalKey _navBarKey = GlobalKey();
+  double? _navBarWidth;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateNavBarWidth());
+  }
+
+  void _updateNavBarWidth() {
+    if (_navBarKey.currentContext != null) {
+      final width = _navBarKey.currentContext!.size?.width;
+      if (width != _navBarWidth) {
+        setState(() {
+          _navBarWidth = width;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateNavBarWidth());
     return Scaffold(
       backgroundColor: Colors.transparent,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -282,27 +309,44 @@ class CompactScreenState extends State<CompactScreen> {
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
             offset: navigationIndex != 2 ? Offset.zero : const Offset(0, 1),
-            child: const BottomMusicController(),
-          ),
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(15),
-              topRight: Radius.circular(15),
+            child: BottomMusicController(
+              width: _navBarWidth != null ? _navBarWidth! * 1.1 : null,
             ),
-            child: NavigationBar(
-              backgroundColor: Theme.of(
-                context,
-              ).navigationBarTheme.backgroundColor,
-              height: 80,
-              destinations: navigationBarDestinationsItems,
-              selectedIndex: navigationIndex,
-              labelBehavior:
-                  NavigationDestinationLabelBehavior.onlyShowSelected,
-              indicatorShape: null,
-              onDestinationSelected: (value) {
-                navigationIndex = value;
-                setState(() {});
-              },
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Transform.scale(
+                scale: 1.1,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ClipRRect(
+                      key: _navBarKey,
+                      borderRadius: const BorderRadius.all(Radius.circular(40)),
+                      child: SalomonBottomBar(
+                        backgroundColor: setAppBarColor(context), 
+                        // Theme.of(
+                        //   context,
+                        // ).navigationBarTheme.backgroundColor,
+                        items: navigationBarDestinationsItems,
+                        currentIndex: navigationIndex,
+                        onTap: (i) => setState(() => navigationIndex = i),
+                        itemPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        selectedItemColor: Colors.red,
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],

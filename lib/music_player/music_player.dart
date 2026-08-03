@@ -7,7 +7,6 @@ import 'package:Rusic/managers/settings_manager.dart';
 import 'package:Rusic/ui/media_ui.dart';
 import 'package:Rusic/managers/ui_manager.dart';
 import 'package:Rusic/music_player/playlists_tab.dart';
-import 'dart:io';
 
 class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
@@ -120,23 +119,52 @@ class LibraryState extends State<Library>
                 ),
               ];
             },
-            body: TabBarView(
-              controller: _tabController,
+            body: Stack(
               children: [
-                const OnlineScreen(),
-                AnimatedBuilder(
-                  animation: DatabaseManager.instance,
-                  builder: (context, _) {
-                    return OnlineMediaUI(
-                      title: "Favorites",
-                      showMusicController: true,
-                      emptyMessage: "No Favorite Yet...",
-                      songsFuture: DatabaseManager.instance.getAllFavoriteSongs(),
-                    );
-                  },
+                TabBarView(
+                  controller: _tabController,
+                  children: [
+                    const OnlineScreen(),
+                    AnimatedBuilder(
+                      animation: DatabaseManager.instance,
+                      builder: (context, _) {
+                        return OnlineMediaUI(
+                          title: "Favorites",
+                          showMusicController: true,
+                          emptyMessage: "No Favorite Yet...",
+                          songsFuture: DatabaseManager.instance
+                              .getAllFavoriteSongs(),
+                        );
+                      },
+                    ),
+                    const PlaylistsTab(),
+                    const LocationsTab(),
+                  ],
                 ),
-                const PlaylistsTab(),
-                const LocationsTab(),
+                Positioned(
+                  bottom: 0,
+                  child: IgnorePointer(
+                    child: Container(
+                      height: 100,
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Theme.of(
+                              context,
+                            ).scaffoldBackgroundColor.withValues(alpha: 0.0),
+                            Theme.of(
+                              context,
+                            ).scaffoldBackgroundColor.withValues(alpha: 0.8),
+                            Theme.of(context).scaffoldBackgroundColor,
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

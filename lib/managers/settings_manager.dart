@@ -95,7 +95,7 @@ class SettingsManager {
   static const String _skipAtBeginningKey = 'skipAtBeginning';
   static final ValueNotifier<String> skipAtBeginning = ValueNotifier('0');
   static const String _skipAtEndKey = 'skipAtEnd';
-  static final ValueNotifier<String> skipAtEnd = ValueNotifier('10');
+  static final ValueNotifier<String> skipAtEnd = ValueNotifier('0');
   static const String _fontFamilyKey = 'fontFamily';
   static const String _lastSongPlayedNameKey = 'lastSongPlayedName';
   static const String _lastSongPlayedPathKey = 'lastSongPlayedPath';
@@ -130,7 +130,7 @@ class SettingsManager {
   static String get getSkipAtBeginning =>
       userSettings.getString(_skipAtBeginningKey) ?? "0";
   static String get getSkipAtEnd =>
-      userSettings.getString(_skipAtEndKey) ?? "10";
+      userSettings.getString(_skipAtEndKey) ?? "0";
 
   // Previously existing gets
   static String get getFontFamily {
@@ -224,8 +224,8 @@ class SettingsManager {
     highlightsDuration.value = "30";
     await userSettings.setString(_skipAtBeginningKey, "0");
     skipAtBeginning.value = "0";
-    await userSettings.setString(_skipAtEndKey, "10");
-    skipAtEnd.value = "10";
+    await userSettings.setString(_skipAtEndKey, "0");
+    skipAtEnd.value = "0";
     await userSettings.setString(_fontFamilyKey, defaultFontFamily);
     fontFamily.value = defaultFontFamily;
   }

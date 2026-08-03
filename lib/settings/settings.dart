@@ -38,53 +38,86 @@ class _SettingsState extends State<Settings> {
     // the layout changes internally below.
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-        child: CustomScrollView(
-          slivers: [
-            CupertinoSliverNavigationBar(
-              stretch: true,
-              alwaysShowMiddle: false,
-              border: Border(
-                bottom: BorderSide(color: setAppBarBorderColor(context)),
-              ),
-              backgroundColor: setAppBarColor(context),
-              largeTitle: const Text("Settings"),
-            ),
-            const SliverPadding(
-              padding: EdgeInsets.fromLTRB(10, 20, 10, 10),
-              sliver: SliverToBoxAdapter(child: UnifiedSettingsScreen()),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20.0),
-                child: Center(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.withValues(alpha: 0.8),
-                      foregroundColor: Colors.white,
+      body: Stack(
+        children: [
+          ScrollConfiguration(
+            behavior: ScrollConfiguration.of(
+              context,
+            ).copyWith(scrollbars: false),
+            child: CustomScrollView(
+              slivers: [
+                CupertinoSliverNavigationBar(
+                  stretch: true,
+                  alwaysShowMiddle: false,
+                  border: Border(
+                    bottom: BorderSide(color: setAppBarBorderColor(context)),
+                  ),
+                  backgroundColor: setAppBarColor(context),
+                  largeTitle: const Text("Settings"),
+                ),
+                const SliverPadding(
+                  padding: EdgeInsets.fromLTRB(10, 20, 10, 10),
+                  sliver: SliverToBoxAdapter(child: UnifiedSettingsScreen()),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20.0),
+                    child: Center(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.withValues(alpha: 0.8),
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () async {
+                          // 1. Clear FlutterSecureStorage
+                          final credentialsManager = CredentialsManager();
+                          await credentialsManager.clearAll();
+
+                          // 2. Clear SharedPreferences
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.clear();
+
+                          if (context.mounted) {
+                            showToast(
+                              context,
+                              "All app data has been cleared.",
+                            );
+                          }
+                        },
+                        child: const Text("Clear All App Data"),
+                      ),
                     ),
-                    onPressed: () async {
-                      // 1. Clear FlutterSecureStorage
-                      final credentialsManager = CredentialsManager();
-                      await credentialsManager.clearAll();
-
-                      // 2. Clear SharedPreferences
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.clear();
-
-                      if (context.mounted) {
-                        showToast(context, "All app data has been cleared.");
-                      }
-                    },
-                    child: const Text("Clear All App Data"),
+                  ),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 80)),
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            child: IgnorePointer(
+              child: Container(
+                height: 100,
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(
+                        context,
+                      ).scaffoldBackgroundColor.withValues(alpha: 0.0),
+                      Theme.of(
+                        context,
+                      ).scaffoldBackgroundColor.withValues(alpha: 0.8),
+                      Theme.of(context).scaffoldBackgroundColor,
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                   ),
                 ),
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 80)),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -521,7 +554,10 @@ class _UnifiedSettingsScreenState extends State<UnifiedSettingsScreen> {
               const _SectionHeader("Video Settings"),
               const Divider(),
               const SizedBox(height: 16),
-              const Text("Video Preference (Default)", style: TextStyle(fontSize: 16)),
+              const Text(
+                "Video Preference (Default)",
+                style: TextStyle(fontSize: 16),
+              ),
               const SizedBox(height: 12),
               Center(
                 child: Wrap(
@@ -532,14 +568,12 @@ class _UnifiedSettingsScreenState extends State<UnifiedSettingsScreen> {
                     ChoiceChip(
                       label: _controlLabel("Contain"),
                       selected: _selectedVideoPreference == "Contain",
-                      onSelected: (_) =>
-                          _onVideoPreferenceChanged("Contain"),
+                      onSelected: (_) => _onVideoPreferenceChanged("Contain"),
                     ),
                     ChoiceChip(
                       label: _controlLabel("Cover"),
                       selected: _selectedVideoPreference == "Cover",
-                      onSelected: (_) =>
-                          _onVideoPreferenceChanged("Cover"),
+                      onSelected: (_) => _onVideoPreferenceChanged("Cover"),
                     ),
                   ],
                 ),
@@ -872,7 +906,8 @@ class _UnifiedSettingsScreenState extends State<UnifiedSettingsScreen> {
                             ),
                             keyboardType: TextInputType.number,
                             textInputAction: TextInputAction.done,
-                            onSubmitted: (_) => skipAtBeginningFocusNode.unfocus(),
+                            onSubmitted: (_) =>
+                                skipAtBeginningFocusNode.unfocus(),
                           ),
                         ),
                       ],
@@ -1012,19 +1047,15 @@ class _UnifiedSettingsScreenState extends State<UnifiedSettingsScreen> {
                             children: [
                               ChoiceChip(
                                 label: _controlLabel("Contain"),
-                                selected:
-                                    _selectedVideoPreference == "Contain",
-                                onSelected: (_) => _onVideoPreferenceChanged(
-                                  "Contain",
-                                ),
+                                selected: _selectedVideoPreference == "Contain",
+                                onSelected: (_) =>
+                                    _onVideoPreferenceChanged("Contain"),
                               ),
                               ChoiceChip(
                                 label: _controlLabel("Cover"),
-                                selected:
-                                    _selectedVideoPreference == "Cover",
-                                onSelected: (_) => _onVideoPreferenceChanged(
-                                  "Cover",
-                                ),
+                                selected: _selectedVideoPreference == "Cover",
+                                onSelected: (_) =>
+                                    _onVideoPreferenceChanged("Cover"),
                               ),
                             ],
                           ),
@@ -1056,7 +1087,8 @@ class _UnifiedSettingsScreenState extends State<UnifiedSettingsScreen> {
                             focusNode: highlightsDurationFocusNode,
                             keyboardType: TextInputType.number,
                             textInputAction: TextInputAction.done,
-                            onSubmitted: (_) => highlightsDurationFocusNode.unfocus(),
+                            onSubmitted: (_) =>
+                                highlightsDurationFocusNode.unfocus(),
                             decoration: const InputDecoration(
                               border: InputBorder.none,
                               suffixText: "s",
