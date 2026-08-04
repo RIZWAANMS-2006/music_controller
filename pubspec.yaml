@@ -125,11 +125,7 @@ flutter:
 
     - family: Asimovian
       fonts:
-        - asset: assets/Asimovian/Asimovian-Regular.ttf
-
-    - family: Borel
-      fonts:
-        - asset: assets/Borel/Borel-Regular.ttf
+          - asset: assets/Asimovian/Asimovian-Regular.ttf
    
     - family: ComicRelief
       fonts:

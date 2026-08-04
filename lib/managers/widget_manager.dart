@@ -31,7 +31,7 @@ class WidgetManager {
     await HomeWidget.setAppGroupId('group.rusic.app'); // Required for iOS, ignored on Android
     
     // Register background callback for widget button clicks
-    await HomeWidget.registerBackgroundCallback(backgroundCallback);
+    await HomeWidget.registerInteractivityCallback(backgroundCallback);
 
     // Listen to changes and update the widget
     _listenToPlaybackState();

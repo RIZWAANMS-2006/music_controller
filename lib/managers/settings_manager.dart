@@ -245,7 +245,6 @@ class SettingsManager {
     }
     const validFonts = <String>{
       defaultFontFamily,
-      'Borel',
       'ComicRelief',
       systemFontOption,
     };

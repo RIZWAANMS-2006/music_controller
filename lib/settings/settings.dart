@@ -133,14 +133,12 @@ class UnifiedSettingsScreen extends StatefulWidget {
 class _UnifiedSettingsScreenState extends State<UnifiedSettingsScreen> {
   static const List<String> _fontOptions = [
     SettingsManager.defaultFontFamily,
-    'Borel',
     'ComicRelief',
     SettingsManager.systemFontOption,
   ];
 
   static const List<DropdownMenuEntry<String>> _fontDropdownEntries = [
     DropdownMenuEntry(value: 'Asimovian', label: 'Asimovian'),
-    DropdownMenuEntry(value: 'Borel', label: 'Borel'),
     DropdownMenuEntry(value: 'ComicRelief', label: 'ComicRelief'),
     DropdownMenuEntry(value: 'System Font', label: 'System Font'),
   ];
@@ -278,27 +276,8 @@ class _UnifiedSettingsScreenState extends State<UnifiedSettingsScreen> {
     SettingsManager.setPlayHighlights(value);
   }
 
-  bool get _isBorelSelected => _selectedFont == 'Borel';
-
   Widget _controlLabel(String text) {
-    final label = Text(
-      text,
-      textHeightBehavior: _isBorelSelected
-          ? const TextHeightBehavior(applyHeightToLastDescent: false)
-          : null,
-      style: _isBorelSelected
-          ? const TextStyle(
-              height: 1.0,
-              leadingDistribution: TextLeadingDistribution.even,
-            )
-          : null,
-    );
-
-    if (!_isBorelSelected) {
-      return label;
-    }
-
-    return Transform.translate(offset: const Offset(0, 7), child: label);
+    return Text(text);
   }
 
   Map<String, Widget> get _systemThemeOptions => {

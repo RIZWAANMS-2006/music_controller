@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:Rusic/music_player/music_controller.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -91,10 +92,7 @@ List<SalomonBottomBarItem> navigationBarDestinationsItems = [
     title: const Text("Search"),
   ),
 
-  SalomonBottomBarItem(
-    icon: const Icon(Icons.home),
-    title: const Text("Home"),
-  ),
+  SalomonBottomBarItem(icon: const Icon(Icons.home), title: const Text("Home")),
 
   SalomonBottomBarItem(
     icon: const Icon(Icons.settings),
@@ -154,24 +152,7 @@ class RusicState extends State<Rusic> {
               if (child == null) {
                 return const SizedBox.shrink();
               }
-
-              final isBorelFont = SettingsManager.getFontFamily == 'Borel';
-              if (!isBorelFont) {
-                return child;
-              }
-
-              return DefaultTextHeightBehavior(
-                textHeightBehavior: const TextHeightBehavior(
-                  applyHeightToLastDescent: false,
-                ),
-                child: DefaultTextStyle.merge(
-                  style: const TextStyle(
-                    height: 1.0,
-                    leadingDistribution: TextLeadingDistribution.even,
-                  ),
-                  child: child,
-                ),
-              );
+              return child;
             },
             //ThemeMode.system,
             home: LayoutBuilder(
@@ -289,6 +270,7 @@ class CompactScreen extends StatefulWidget {
 
 class CompactScreenState extends State<CompactScreen> {
   final GlobalKey _navBarKey = GlobalKey();
+  bool _isVisible = true;
   double? _navBarWidth;
 
   @override
@@ -315,58 +297,88 @@ class CompactScreenState extends State<CompactScreen> {
       backgroundColor: Colors.transparent,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       extendBody: true,
-      bottomNavigationBar: Stack(
-        alignment: AlignmentGeometry.bottomCenter,
+      bottomNavigationBar: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           AnimatedSlide(
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 200),
             curve: Curves.easeInOut,
-            offset: navigationIndex != 2 ? Offset.zero : const Offset(0, 1),
+            offset: navigationIndex == 2
+                ? const Offset(0, 2.2)
+                : (_isVisible ? Offset.zero : const Offset(0, 1.2)),
             child: BottomMusicController(
               width: _navBarWidth != null ? _navBarWidth! * 1.1 : null,
             ),
           ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 14),
-              child: Transform.scale(
-                scale: 1.1,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ClipRRect(
-                      key: _navBarKey,
-                      borderRadius: const BorderRadius.all(Radius.circular(40)),
-                      child: SalomonBottomBar(
-                        backgroundColor: setAppBarColor(context), 
-                        // Theme.of(
-                        //   context,
-                        // ).navigationBarTheme.backgroundColor,
-                        items: navigationBarDestinationsItems,
-                        currentIndex: navigationIndex,
-                        onTap: (i) => setState(() => navigationIndex = i),
-                        itemPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
+          AnimatedSlide(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            offset: _isVisible ? Offset.zero : const Offset(0, 2.0),
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              opacity: _isVisible ? 1.0 : 0.0,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ClipRRect(
+                        key: _navBarKey,
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(40),
                         ),
-                        selectedItemColor: Colors.red,
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
+                        child: SalomonBottomBar(
+                          backgroundColor: setAppBarColor(context),
+                          items: navigationBarDestinationsItems,
+                          currentIndex: navigationIndex,
+                          onTap: (i) => setState(() {
+                            navigationIndex = i;
+                            _isVisible = true;
+                          }),
+                          itemPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          selectedItemColor: Colors.red,
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
         ],
       ),
-      body: IndexedStack(
-        index: navigationIndex,
-        children: const [Search(), Library(), Settings()],
+      body: NotificationListener<UserScrollNotification>(
+        onNotification: (notification) {
+          if (notification.direction == ScrollDirection.reverse) {
+            if (_isVisible) {
+              setState(() {
+                _isVisible = false;
+              });
+            }
+          } else if (notification.direction == ScrollDirection.forward) {
+            if (!_isVisible) {
+              setState(() {
+                _isVisible = true;
+              });
+            }
+          }
+          return false;
+        },
+        child: IndexedStack(
+          index: navigationIndex,
+          children: const [Search(), Library(), Settings()],
+        ),
       ),
     );
   }

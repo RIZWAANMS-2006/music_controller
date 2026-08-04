@@ -6,7 +6,6 @@ import 'dart:io';
 import 'package:shimmer/shimmer.dart';
 import 'package:Rusic/managers/songs_manager.dart';
 import 'package:Rusic/managers/database_manager.dart';
-import 'package:Rusic/managers/settings_manager.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 
 /// A universal UI component for displaying media files across different tabs.
@@ -849,27 +848,7 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
   String? _selectedSource;
   String _searchQuery = "";
 
-  Widget _borelAlignedChipLabel(String text) {
-    final isBorelFont = SettingsManager.getFontFamily == 'Borel';
-    final label = Text(
-      text,
-      textHeightBehavior: isBorelFont
-          ? const TextHeightBehavior(applyHeightToLastDescent: false)
-          : null,
-      style: isBorelFont
-          ? const TextStyle(
-              height: 1.0,
-              leadingDistribution: TextLeadingDistribution.even,
-            )
-          : null,
-    );
 
-    if (!isBorelFont) {
-      return label;
-    }
-
-    return Transform.translate(offset: const Offset(0, 7), child: label);
-  }
 
   @override
   void dispose() {
@@ -1022,7 +1001,7 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
         child: Row(
           children: [
             ChoiceChip(
-              label: _borelAlignedChipLabel('All'),
+              label: Text('All'),
               selected: _selectedSource == null,
               onSelected: (selected) {
                 if (selected) {
@@ -1034,7 +1013,7 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
               (source) => Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: ChoiceChip(
-                  label: _borelAlignedChipLabel(source),
+                  label: Text(source),
                   selected: _selectedSource == source,
                   onSelected: (selected) {
                     setState(() => _selectedSource = selected ? source : null);

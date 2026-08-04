@@ -254,137 +254,173 @@ class BottomMusicControllerState extends State<BottomMusicController> {
           child: Container(
             alignment: Alignment.center,
             width: (MediaQuery.of(context).size.width / 2),
-            height: 65,
-            margin: const EdgeInsets.only(bottom: 90),
+            height: 55,
+            margin: const EdgeInsets.only(bottom: 15),
             decoration: BoxDecoration(
               color: setContainerContrastColor(context),
               borderRadius: const BorderRadius.all(Radius.circular(40)),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4, right: 4),
+                            child: Hero(
+                              tag: "Music Logo",
+                              child: Container(
+                                width: 45,
+                                height: 45,
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: setContainerColor(context),
+                                  borderRadius: BorderRadius.circular(40),
+                                ),
+                                child: SvgPicture.asset(
+                                  "assets/MusicIcons/music_logo.svg",
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge!.color!,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                right: 8,
+                                bottom: 2,
+                              ),
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final text = currentSong == null
+                                      ? "No Song is Playing..."
+                                      : currentSong.title;
+                                  final style = TextStyle(
+                                    color: setContainerColor(context),
+                                    fontSize: 12,
+                                  );
+
+                                  final textPainter = TextPainter(
+                                    text: TextSpan(text: text, style: style),
+                                    maxLines: 1,
+                                    textDirection:
+                                        Directionality.maybeOf(context) ??
+                                        TextDirection.ltr,
+                                    textScaler: MediaQuery.of(
+                                      context,
+                                    ).textScaler,
+                                  )..layout(maxWidth: double.infinity);
+
+                                  final bool isOverflowing =
+                                      textPainter.width > constraints.maxWidth;
+
+                                  if (isOverflowing) {
+                                    return TextScroll(
+                                      text,
+                                      velocity: const Velocity(
+                                        pixelsPerSecond: Offset(30, 0),
+                                      ),
+                                      pauseBetween: const Duration(seconds: 2),
+                                      mode: TextScrollMode.endless,
+                                      style: style,
+                                    );
+                                  } else {
+                                    return Text(
+                                      text,
+                                      maxLines: 1,
+                                      style: style,
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (constraints.maxWidth >= 210)
                       Padding(
-                        padding: const EdgeInsets.only(left: 8, right: 8),
-                        child: Hero(
-                          tag: "Music Logo",
-                          child: Container(
-                            width: 45,
-                            height: 45,
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: setContainerColor(context),
-                              borderRadius: BorderRadius.circular(40),
-                            ),
-                            child: SvgPicture.asset(
-                              "assets/MusicIcons/music_logo.svg",
-                              color: Theme.of(
-                                context,
-                              ).textTheme.bodyLarge!.color!,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final text = currentSong == null
-                                  ? "No Song is Playing..."
-                                  : currentSong.title;
-                              final style = TextStyle(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: StreamBuilder<PlayerState>(
+                          stream: AudioManager().playerStateStream,
+                          builder: (context, snapshot) {
+                            final playing = snapshot.data?.playing ?? false;
+                            return IconButton(
+                              icon: SvgPicture.asset(
+                                playing
+                                    ? "assets/MusicIcons/pause.svg"
+                                    : "assets/MusicIcons/play.svg",
                                 color: setContainerColor(context),
-                              );
-
-                              final textPainter = TextPainter(
-                                text: TextSpan(text: text, style: style),
-                                maxLines: 1,
-                                textDirection:
-                                    Directionality.maybeOf(context) ??
-                                    TextDirection.ltr,
-                                textScaler: MediaQuery.of(context).textScaler,
-                              )..layout(maxWidth: double.infinity);
-
-                              final bool isOverflowing =
-                                  textPainter.width > constraints.maxWidth;
-
-                              if (isOverflowing) {
-                                return TextScroll(
-                                  text,
-                                  velocity: const Velocity(
-                                    pixelsPerSecond: Offset(30, 0),
-                                  ),
-                                  pauseBetween: const Duration(seconds: 2),
-                                  mode: TextScrollMode.endless,
-                                  style: style,
-                                );
-                              } else {
-                                return Text(
-                                  text,
-                                  maxLines: 1,
-                                  style: style,
-                                );
-                              }
-                            },
-                          ),
+                                width: 18,
+                                height: 18,
+                              ),
+                              onPressed: () {
+                                playing
+                                    ? AudioManager().pause()
+                                    : AudioManager().resume();
+                              },
+                            );
+                          },
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                // Padding(
-                //   padding: const EdgeInsets.only(right: 8),
-                //   child: StreamBuilder<PlayerState>(
-                //     stream: AudioManager().playerStateStream,
-                //     builder: (context, snapshot) {
-                //       final playing = snapshot.data?.playing ?? false;
-                //       return IconButton(
-                //         icon: SvgPicture.asset(
-                //           playing
-                //               ? "assets/MusicIcons/pause.svg"
-                //               : "assets/MusicIcons/play.svg",
-                //           color: setContainerColor(context),
-                //           width: 25,
-                //           height: 25,
-                //         ),
-                //         onPressed: () {
-                //           playing
-                //               ? AudioManager().pause()
-                //               : AudioManager().resume();
-                //         },
-                //       );
-                // },
-                // ),
-            
-                // IconButton(
-                //   onPressed: () {
-                //     SongsManager().toggleRepeat();
-                //   },
-                //   icon: SvgPicture.asset(
-                //     "assets/MusicIcons/loop.svg",
-                //     color: SongsManager().repeatMode.name != 'off'
-                //         ? Colors.red
-                //         : setContainerColor(context),
-                //   ),
-                // ),
-                // IconButton(
-                //   onPressed: () {
-                //     SongsManager().toggleShuffle();
-                //   },
-                //   icon: SvgPicture.asset(
-                //     "assets/MusicIcons/shuffle.svg",
-                //     color: SongsManager().isShuffle
-                //         ? Colors.red
-                //         : setContainerColor(context),
-                //   ),
-                // ),
-                // ),
-              ],
+                  ],
+                );
+              },
             ),
+
+            // Padding(
+            //   padding: const EdgeInsets.only(right: 8),
+            //   child: StreamBuilder<PlayerState>(
+            //     stream: AudioManager().playerStateStream,
+            //     builder: (context, snapshot) {
+            //       final playing = snapshot.data?.playing ?? false;
+            //       return IconButton(
+            //         icon: SvgPicture.asset(
+            //           playing
+            //               ? "assets/MusicIcons/pause.svg"
+            //               : "assets/MusicIcons/play.svg",
+            //           color: setContainerColor(context),
+            //           width: 25,
+            //           height: 25,
+            //         ),
+            //         onPressed: () {
+            //           playing
+            //               ? AudioManager().pause()
+            //               : AudioManager().resume();
+            //         },
+            //       );
+            // },
+            // ),
+
+            // IconButton(
+            //   onPressed: () {
+            //     SongsManager().toggleRepeat();
+            //   },
+            //   icon: SvgPicture.asset(
+            //     "assets/MusicIcons/loop.svg",
+            //     color: SongsManager().repeatMode.name != 'off'
+            //         ? Colors.red
+            //         : setContainerColor(context),
+            //   ),
+            // ),
+            // IconButton(
+            //   onPressed: () {
+            //     SongsManager().toggleShuffle();
+            //   },
+            //   icon: SvgPicture.asset(
+            //     "assets/MusicIcons/shuffle.svg",
+            //     color: SongsManager().isShuffle
+            //         ? Colors.red
+            //         : setContainerColor(context),
+            //   ),
+            // ),
+            // ),
           ),
         );
       },
@@ -444,15 +480,25 @@ class _CustomToggleSwitchState extends State<CustomToggleSwitch> {
                     child: Container(
                       alignment: Alignment.center,
                       color: Colors.transparent,
-                      child: AnimatedDefaultTextStyle(
-                        duration: const Duration(milliseconds: 250),
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w500,
-                          color: isAudioSelected ? Colors.white : Colors.black,
-                          fontFamily: 'Quicksand',
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 250),
+                          style: TextStyle(
+                            fontSize:
+                                14, // Set a more readable default size that scales down if needed
+                            fontWeight: FontWeight.w500,
+                            color: isAudioSelected
+                                ? Colors.white
+                                : Colors.black,
+                            fontFamily: 'Quicksand',
+                          ),
+                          child: const Text(
+                            "Audio",
+                            maxLines: 1,
+                            softWrap: false,
+                          ),
                         ),
-                        child: const Text("Audio"),
                       ),
                     ),
                   ),
@@ -467,14 +513,24 @@ class _CustomToggleSwitchState extends State<CustomToggleSwitch> {
                     child: Container(
                       alignment: Alignment.center,
                       color: Colors.transparent,
-                      child: AnimatedDefaultTextStyle(
-                        duration: const Duration(milliseconds: 250),
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w500,
-                          color: isAudioSelected ? Colors.black : Colors.white,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 250),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: isAudioSelected
+                                ? Colors.black
+                                : Colors.white,
+                            fontFamily: 'Quicksand',
+                          ),
+                          child: const Text(
+                            "Video",
+                            maxLines: 1,
+                            softWrap: false,
+                          ),
                         ),
-                        child: const Text("Video"),
                       ),
                     ),
                   ),
@@ -1006,8 +1062,6 @@ class _FullSizeMusicControllerState extends State<FullSizeMusicController> {
                                                           1,
                                                         ),
                                                         fontSize: 14,
-                                                        fontFamily: "Borel",
-                                                        height: 0.9,
                                                       ),
                                                     ),
                                                     Padding(
@@ -1035,8 +1089,6 @@ class _FullSizeMusicControllerState extends State<FullSizeMusicController> {
                                                             1,
                                                           ),
                                                           fontSize: 16,
-                                                          fontFamily: "Borel",
-                                                          height: 0.9,
                                                         ),
                                                       ),
                                                     ),
@@ -1149,6 +1201,7 @@ class _FullSizeMusicControllerState extends State<FullSizeMusicController> {
                                               final isVideo = VideoManager()
                                                   .isVideoAvailable;
                                               return TabBar(
+                                                labelPadding: EdgeInsets.zero,
                                                 indicatorSize:
                                                     TabBarIndicatorSize.tab,
                                                 indicator: BoxDecoration(
