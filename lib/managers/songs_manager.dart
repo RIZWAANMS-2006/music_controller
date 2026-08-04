@@ -311,6 +311,8 @@ class SongsManager extends ChangeNotifier {
         song.path, 
         initialPosition: Duration(seconds: skipAtBeginning),
         crossfadeDuration: crossfade,
+        title: song.title,
+        artist: song.artist,
       );
       
       // Initialize new video if compatible

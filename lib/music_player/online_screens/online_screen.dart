@@ -188,32 +188,40 @@ class OnlineScreenState extends State<OnlineScreen> {
     if (!_isConfigured) {
       return const Scaffold(
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.cloud_off, size: 64, color: Colors.grey),
-              SizedBox(height: 6),
-              Text(
-                'Not Configured',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 4),
-              Text(
-                'Please configure Supabase or Server inside Settings.',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-            ],
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.signal_wifi_connected_no_internet_4, size: 64, color: Colors.grey),
+                SizedBox(height: 6),
+                Text(
+                  'Not Configured',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Please configure Supabase or Server inside Settings.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ],
+            ),
           ),
         ),
       );
     }
 
-    return OnlineMediaUI(
-      title: 'Online',
-      songsFuture: _songsFuture,
-      emptyMessage: 'No songs found. Please check your connection or server.',
-      showMusicController: true,
-      onLogout: null, // Removed logout button from UI
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 100,),
+      child: OnlineMediaUI(
+        title: 'Online',
+        songsFuture: _songsFuture,
+        emptyMessage: 'No songs found. Please check your connection or server.',
+        showMusicController: true,
+        onLogout: null, // Removed logout button from UI
+      ),
     );
   }
 }

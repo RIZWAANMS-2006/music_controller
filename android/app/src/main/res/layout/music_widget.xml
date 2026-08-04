@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="@drawable/widget_background">
+
+    <!-- Top Row: Album Art, Title, Heart -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+
+        <!-- Album Art Placeholder -->
+        <RelativeLayout
+            android:id="@+id/album_art_container"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:background="@drawable/bg_album_art"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true">
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_music_note"
+                android:layout_centerInParent="true" />
+        </RelativeLayout>
+
+        <!-- Song Info Text -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_toEndOf="@id/album_art_container"
+            android:layout_toStartOf="@+id/iv_heart"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Song:"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Not Playing"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:singleLine="true"
+                android:ellipsize="end" />
+        </LinearLayout>
+
+        <!-- Heart Icon -->
+        <ImageView
+            android:id="@+id/iv_heart"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/ic_heart"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true" />
+
+    </RelativeLayout>
+
+    <!-- Progress Bar -->
+    <ProgressBar
+        android:id="@+id/pb_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_marginBottom="24dp"
+        android:max="1000"
+        android:progress="0"
+        android:progressTint="#FF0000"
+        android:progressBackgroundTint="#FFFFFF" />
+
+    <!-- Controls Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_weight="1">
+
+        <ImageButton
+            android:id="@+id/btn_shuffle"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_widget_shuffle"
+            android:background="?android:selectableItemBackgroundBorderless"
+            android:scaleType="fitCenter"
+            android:layout_weight="1"
+            android:tint="#FFFFFF" />
+
+        <ImageButton
+            android:id="@+id/btn_prev"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_widget_prev"
+            android:background="?android:selectableItemBackgroundBorderless"
+            android:scaleType="fitCenter"
+            android:layout_weight="1"
+            android:tint="#FFFFFF" />
+
+        <!-- Play/Pause Button with Red Circle -->
+        <RelativeLayout
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_weight="0"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp">
+            
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_play_circle" />
+
+            <ImageButton
+                android:id="@+id/btn_play_pause"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/ic_widget_play"
+                android:background="?android:selectableItemBackgroundBorderless"
+                android:scaleType="fitCenter"
+                android:tint="#FFFFFF" />
+        </RelativeLayout>
+
+        <ImageButton
+            android:id="@+id/btn_next"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_widget_next"
+            android:background="?android:selectableItemBackgroundBorderless"
+            android:scaleType="fitCenter"
+            android:layout_weight="1"
+            android:tint="#FFFFFF" />
+
+        <ImageButton
+            android:id="@+id/btn_loop"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_widget_loop"
+            android:background="?android:selectableItemBackgroundBorderless"
+            android:scaleType="fitCenter"
+            android:layout_weight="1"
+            android:tint="#FFFFFF" />
+
+    </LinearLayout>
+</LinearLayout>

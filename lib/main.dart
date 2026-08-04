@@ -8,17 +8,27 @@ import 'music_player/music_player.dart';
 import 'settings/settings.dart';
 import 'search/search_page.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:Rusic/managers/settings_manager.dart';
 import 'package:Rusic/managers/database_manager.dart';
 import 'package:Rusic/managers/ui_manager.dart';
+import 'package:Rusic/managers/widget_manager.dart';
 import 'package:toastification/toastification.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
 Future<void> main() async {
   // Initialize JustAudioMediaKit And Flutter Bindings
   WidgetsFlutterBinding.ensureInitialized();
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.rusic.app.channel.audio',
+    androidNotificationChannelName: 'Rusic Audio Playback',
+    androidNotificationOngoing: true,
+    androidStopForegroundOnPause: true,
+    notificationColor: const Color(0xFFE53935), // Red accent
+    androidShowNotificationBadge: true,
+  );
   JustAudioMediaKit.ensureInitialized();
 
   await SettingsManager.init();
@@ -26,14 +36,17 @@ Future<void> main() async {
       .instance
       .database; // Ensure database & cache initialized
 
+  if (Platform.isAndroid || Platform.isIOS) {
+    await WidgetManager.initWidget();
+  }
+
   // Request Android permissions early (Android 11+)
   if (Platform.isAndroid) {
     // Request READ_EXTERNAL_STORAGE first (more reliable than MANAGE_EXTERNAL_STORAGE)
-    PermissionStatus readStatus = await Permission.storage.request();
+    await Permission.storage.request();
 
     // Also try MANAGE_EXTERNAL_STORAGE for broader access
-    PermissionStatus manageStatus = await Permission.manageExternalStorage
-        .request();
+    await Permission.manageExternalStorage.request();
   }
 
   // Custom Error Widget
@@ -315,7 +328,7 @@ class CompactScreenState extends State<CompactScreen> {
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: 14),
               child: Transform.scale(
                 scale: 1.1,
                 child: Row(
@@ -340,7 +353,7 @@ class CompactScreenState extends State<CompactScreen> {
                         selectedItemColor: Colors.red,
                         margin: const EdgeInsets.symmetric(
                           horizontal: 10,
-                          vertical: 8,
+                          vertical: 6,
                         ),
                       ),
                     ),

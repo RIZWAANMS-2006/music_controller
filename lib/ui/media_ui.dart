@@ -276,10 +276,26 @@ class _MediaUIState extends State<MediaUI> {
       );
     }
 
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
+
     return SliverAppBar(
       backgroundColor: Colors.transparent,
-      leadingWidth: 30,
+      leadingWidth: 40,
       expandedHeight: 20,
+      automaticallyImplyLeading: false,
+      leading: canPop
+          ? IconButton(
+              hoverColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              splashColor: Colors.transparent,
+              focusColor: Colors.transparent,
+              style: const ButtonStyle(
+                overlayColor: WidgetStatePropertyAll(Colors.transparent),
+              ),
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.maybePop(context),
+            )
+          : null,
       title: Text(
         widget.title,
         style: const TextStyle(color: Colors.white, fontSize: 18),
@@ -936,21 +952,26 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.cloud_off, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            Text(
-              widget.emptyMessage,
-              style: const TextStyle(color: Colors.white, fontSize: 18),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'No songs available in this table',
-              style: TextStyle(color: Colors.grey, fontSize: 14),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.cloud_off, size: 64, color: Colors.grey),
+              const SizedBox(height: 16),
+              Text(
+                widget.emptyMessage,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white, fontSize: 18),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'No songs available in this table',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1036,8 +1057,27 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
       },
     );
 
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
+
     return AppBar(
       title: searchField,
+      automaticallyImplyLeading: false,
+      leading: canPop
+          ? IconButton(
+              hoverColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              splashColor: Colors.transparent,
+              focusColor: Colors.transparent,
+              style: const ButtonStyle(
+                overlayColor: WidgetStatePropertyAll(Colors.transparent),
+              ),
+              icon: Icon(
+                Icons.arrow_back,
+                color: Theme.of(context).iconTheme.color ?? Colors.white,
+              ),
+              onPressed: () => Navigator.maybePop(context),
+            )
+          : null,
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(50),
         child: Padding(
