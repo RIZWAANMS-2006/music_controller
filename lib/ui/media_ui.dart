@@ -240,7 +240,7 @@ class _MediaUIState extends State<MediaUI> {
       _lastMediaByLocation = mediaByLocation;
       _sortedFiles = _sortAndMapFiles(allFiles);
     }
-    
+
     List<File> filesToDisplay = _sortedFiles;
     if (_searchQuery.isNotEmpty) {
       filesToDisplay = filesToDisplay.where((f) {
@@ -253,7 +253,9 @@ class _MediaUIState extends State<MediaUI> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: isDesktop ? _buildDesktopLayout(filesToDisplay) : _buildMobileLayout(filesToDisplay),
+      body: isDesktop
+          ? _buildDesktopLayout(filesToDisplay)
+          : _buildMobileLayout(filesToDisplay),
     );
   }
 
@@ -329,7 +331,9 @@ class _MediaUIState extends State<MediaUI> {
                       padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
                       child: CupertinoSearchTextField(
                         placeholder: 'Search...',
-                        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                        ),
                         onChanged: (value) {
                           setState(() {
                             _searchQuery = value;
@@ -387,16 +391,16 @@ class _MediaUIState extends State<MediaUI> {
                 height: 100,
                 width: MediaQuery.of(context).size.width,
                 // decoration: BoxDecoration(
-                  // gradient: LinearGradient(
-                  //   colors: [
-                  //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
-                  //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
-                  //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 1),
-                  //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 2),
-                  //   ],
-                  //   begin: Alignment.topCenter,
-                  //   end: Alignment.bottomCenter,
-                  // ),
+                // gradient: LinearGradient(
+                //   colors: [
+                //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
+                //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
+                //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 1),
+                //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 2),
+                //   ],
+                //   begin: Alignment.topCenter,
+                //   end: Alignment.bottomCenter,
+                // ),
                 // ),
               ),
             ),
@@ -422,7 +426,9 @@ class _MediaUIState extends State<MediaUI> {
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
                     child: CupertinoSearchTextField(
                       placeholder: 'Search...',
-                      style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
                       onChanged: (value) {
                         setState(() {
                           _searchQuery = value;
@@ -638,7 +644,9 @@ class _MediaUIState extends State<MediaUI> {
               color: Colors.white,
               borderRadius: BorderRadius.all(Radius.circular(5)),
             ),
-            child: SvgPicture.asset("assets/MusicIcons/music_logo_black.svg"),
+            child: SvgPicture.asset(
+              "assets/MusicIcons/music_logo_black.svg",
+            ),
           ),
           title: Text(
             fileName,
@@ -847,8 +855,6 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
   List<OnlineSong> _sortedSongs = [];
   String? _selectedSource;
   String _searchQuery = "";
-
-
 
   @override
   void dispose() {
@@ -1061,10 +1067,7 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
         preferredSize: const Size.fromHeight(50),
         child: Padding(
           padding: const EdgeInsets.only(bottom: 12.0, left: 16.0),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: chipsWidget,
-          ),
+          child: Align(alignment: Alignment.centerLeft, child: chipsWidget),
         ),
       ),
       backgroundColor: Colors.transparent,
@@ -1118,8 +1121,12 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
     List<OnlineSong> songsToDisplay = _sortedSongs;
     if (_searchQuery.isNotEmpty) {
       songsToDisplay = songsToDisplay.where((s) {
-        final titleMatch = s.title.toLowerCase().contains(_searchQuery.toLowerCase());
-        final artistMatch = s.artist?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false;
+        final titleMatch = s.title.toLowerCase().contains(
+          _searchQuery.toLowerCase(),
+        );
+        final artistMatch =
+            s.artist?.toLowerCase().contains(_searchQuery.toLowerCase()) ??
+            false;
         return titleMatch || artistMatch;
       }).toList();
     }
@@ -1134,7 +1141,9 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
       //         child: BottomMusicController(),
       //       )
       //     : null,
-      body: isDesktop ? _buildDesktopLayout(songsToDisplay) : _buildMobileLayout(songsToDisplay),
+      body: isDesktop
+          ? _buildDesktopLayout(songsToDisplay)
+          : _buildMobileLayout(songsToDisplay),
     );
   }
 
@@ -1293,8 +1302,12 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
-                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
+                      Theme.of(
+                        context,
+                      ).scaffoldBackgroundColor.withValues(alpha: 0.0),
+                      Theme.of(
+                        context,
+                      ).scaffoldBackgroundColor.withValues(alpha: 0.8),
                       Theme.of(context).scaffoldBackgroundColor,
                     ],
                     begin: Alignment.topCenter,
@@ -1448,7 +1461,9 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
               color: Colors.white,
               borderRadius: BorderRadius.all(Radius.circular(5)),
             ),
-            child: SvgPicture.asset("assets/MusicIcons/music_logo_black.svg"),
+            child: SvgPicture.asset(
+              "assets/MusicIcons/music_logo_black.svg",
+            ),
           ),
           title: Text(
             song.title,
@@ -1812,10 +1827,14 @@ Future<void> showAddToPlaylistDialog(
         builder: (context, setState) {
           return AlertDialog(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             title: Text(
               isCreating ? "Create Playlist" : "Add to Playlist",
-              style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
             ),
             content: SizedBox(
               width: double.maxFinite,
@@ -1826,13 +1845,17 @@ Future<void> showAddToPlaylistDialog(
                       children: [
                         TextField(
                           autofocus: true,
-                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                          ),
                           decoration: InputDecoration(
                             labelText: "Playlist Name",
                             labelStyle: const TextStyle(color: Colors.grey),
                             border: const OutlineInputBorder(),
                             focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                              borderSide: BorderSide(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                             ),
                           ),
                           onChanged: (val) => newPlaylistName = val,
@@ -1842,17 +1865,25 @@ Future<void> showAddToPlaylistDialog(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             TextButton(
-                              onPressed: () => setState(() => isCreating = false),
-                              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+                              onPressed: () =>
+                                  setState(() => isCreating = false),
+                              child: const Text(
+                                "Cancel",
+                                style: TextStyle(color: Colors.grey),
+                              ),
                             ),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).colorScheme.primary,
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.primary,
                                 foregroundColor: Colors.white,
                               ),
                               onPressed: () async {
                                 if (newPlaylistName.trim().isNotEmpty) {
-                                  await DatabaseManager.instance.createPlaylist(newPlaylistName.trim());
+                                  await DatabaseManager.instance.createPlaylist(
+                                    newPlaylistName.trim(),
+                                  );
                                   setState(() => isCreating = false);
                                 }
                               },
@@ -1865,8 +1896,11 @@ Future<void> showAddToPlaylistDialog(
                   : FutureBuilder<List<Map<String, dynamic>>>(
                       future: DatabaseManager.instance.getPlaylists(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
                         }
                         final playlists = snapshot.data ?? [];
                         return ListView.builder(
@@ -1874,7 +1908,10 @@ Future<void> showAddToPlaylistDialog(
                           itemBuilder: (context, index) {
                             if (index == 0) {
                               return ListTile(
-                                leading: const Icon(Icons.add, color: Colors.grey),
+                                leading: const Icon(
+                                  Icons.add,
+                                  color: Colors.grey,
+                                ),
                                 title: const Text(
                                   "Create New Playlist",
                                   style: TextStyle(color: Colors.grey),
@@ -1884,23 +1921,35 @@ Future<void> showAddToPlaylistDialog(
                             }
                             final playlist = playlists[index - 1];
                             return ListTile(
-                              leading: Icon(Icons.queue_music, color: Theme.of(context).colorScheme.primary),
+                              leading: Icon(
+                                Icons.queue_music,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                               title: Text(
                                 playlist['name'],
-                                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge?.color,
+                                ),
                               ),
                               onTap: () async {
-                                await DatabaseManager.instance.addSongToPlaylist(
-                                  playlist['id'] as int,
-                                  url,
-                                  title,
-                                  artist,
-                                  source,
-                                );
+                                await DatabaseManager.instance
+                                    .addSongToPlaylist(
+                                      playlist['id'] as int,
+                                      url,
+                                      title,
+                                      artist,
+                                      source,
+                                    );
                                 if (context.mounted) {
                                   Navigator.pop(context);
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Added to ${playlist['name']}')),
+                                    SnackBar(
+                                      content: Text(
+                                        'Added to ${playlist['name']}',
+                                      ),
+                                    ),
                                   );
                                 }
                               },
