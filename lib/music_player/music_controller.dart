@@ -13,6 +13,7 @@ import 'package:Rusic/managers/database_manager.dart';
 import 'package:video_player/video_player.dart';
 import 'package:Rusic/managers/settings_manager.dart';
 
+
 bool _isDragging = false;
 double _dragValue = 0.0;
 
@@ -1062,14 +1063,9 @@ class _FullSizeMusicControllerState extends State<FullSizeMusicController> {
                                                               maxWidth: 300,
                                                             ),
                                                         decoration:
-                                                            const BoxDecoration(
+                                                            BoxDecoration(
                                                               color:
-                                                                  Color.fromRGBO(
-                                                                    255,
-                                                                    245,
-                                                                    245,
-                                                                    1,
-                                                                  ),
+                                                                  setContainerContrastColor(context),
                                                               shape: BoxShape
                                                                   .circle,
                                                             ),
@@ -1077,7 +1073,7 @@ class _FullSizeMusicControllerState extends State<FullSizeMusicController> {
                                                             Alignment.center,
                                                         child: SvgPicture.asset(
                                                           "assets/MusicIcons/music_logo_black.svg",
-                                                          
+                                                          colorFilter: ColorFilter.mode(setContainerColor(context), BlendMode.srcIn),
                                                         ),
                                                       ),
                                                     ),
