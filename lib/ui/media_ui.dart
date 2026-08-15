@@ -1001,7 +1001,7 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
         child: Row(
           children: [
             ChoiceChip(
-              label: Text('All'),
+              label: const Text('All'),
               selected: _selectedSource == null,
               onSelected: (selected) {
                 if (selected) {

@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide RepeatMode;
 import 'package:just_audio/just_audio.dart';
 import 'package:text_scroll/text_scroll.dart';
 import 'package:Rusic/managers/audio_manager.dart';
@@ -29,6 +29,7 @@ class _NotificationMusicPanelState extends State<NotificationMusicPanel> {
   double _volume = 1.0;
   bool _isDraggingSeek = false;
   double _dragSeekValue = 0.0;
+  String? _lastSongPath;
 
   @override
   void initState() {
@@ -84,7 +85,12 @@ class _NotificationMusicPanelState extends State<NotificationMusicPanel> {
           return const SizedBox.shrink();
         }
 
-        _checkLikedStatus();
+        if (_lastSongPath != currentSong.path) {
+          _lastSongPath = currentSong.path;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _checkLikedStatus();
+          });
+        }
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
