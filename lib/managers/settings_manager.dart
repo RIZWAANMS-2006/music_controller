@@ -7,18 +7,21 @@ class SettingsManager {
 
   ThemeData get lightTheme {
     const textColor = Colors.black; // Black text
-    
+
     return ThemeData(
       fontFamily: _themeFontFamily,
       brightness: Brightness.light,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFFF28D7B), // Coral / warm peach seed
-        surfaceContainerHighest: const Color(0xFFE29F8B), // For cards with 0.3 opacity
+        seedColor: const Color.fromARGB(255, 255, 0, 0),
+        // seedColor: const Color(0xFFF28D7B), // Coral / warm peach seed
+        // surfaceContainerHighest: const Color(0xFFE29F8B), // For cards with 0.3 opacity
       ),
       navigationBarTheme: const NavigationBarThemeData(
         backgroundColor: Colors.white,
       ),
-      scaffoldBackgroundColor: const Color(0xFFFDF1E6), // Pale peach/beige background
+      scaffoldBackgroundColor: const Color(
+        0xFFFDF1E6,
+      ), // Pale peach/beige background
       navigationRailTheme: const NavigationRailThemeData(
         backgroundColor: Colors.white,
       ),
@@ -41,16 +44,21 @@ class SettingsManager {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.black87),
-        titleTextStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
+        titleTextStyle: TextStyle(
+          color: Colors.black,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
+
   ThemeData get darkTheme => ThemeData(
     fontFamily: _themeFontFamily,
     brightness: Brightness.dark,
     colorScheme: ColorScheme.fromSeed(
       brightness: Brightness.dark,
-      seedColor: Colors.redAccent,
+      seedColor: const Color.fromARGB(255, 255, 0, 0),
     ),
     navigationBarTheme: const NavigationBarThemeData(
       backgroundColor: Color.fromRGBO(26, 26, 26, 1),
@@ -72,6 +80,17 @@ class SettingsManager {
       titleLarge: TextStyle(color: Color.fromRGBO(255, 245, 245, 1)),
       titleMedium: TextStyle(color: Color.fromRGBO(255, 245, 245, 1)),
       titleSmall: TextStyle(color: Color.fromRGBO(255, 245, 245, 1)),
+    ),
+    iconTheme: const IconThemeData(color: Color.fromRGBO(255, 245, 245, 1)),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      iconTheme: IconThemeData(color: Color.fromRGBO(255, 245, 245, 1)),
+      titleTextStyle: TextStyle(
+        color: Color.fromRGBO(255, 245, 245, 1),
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
     ),
   );
 

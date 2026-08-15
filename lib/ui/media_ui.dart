@@ -386,18 +386,18 @@ class _MediaUIState extends State<MediaUI> {
               child: Container(
                 height: 100,
                 width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
-                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
-                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 1),
-                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 2),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
+                // decoration: BoxDecoration(
+                  // gradient: LinearGradient(
+                  //   colors: [
+                  //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
+                  //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
+                  //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 1),
+                  //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 2),
+                  //   ],
+                  //   begin: Alignment.topCenter,
+                  //   end: Alignment.bottomCenter,
+                  // ),
+                // ),
               ),
             ),
           ),
@@ -491,17 +491,17 @@ class _MediaUIState extends State<MediaUI> {
             child: Container(
               height: 100,
               width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
-                    Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
-                    Theme.of(context).scaffoldBackgroundColor,
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
+              // decoration: BoxDecoration(
+              //   gradient: LinearGradient(
+              //     colors: [
+              //       Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
+              //       Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
+              //       Theme.of(context).scaffoldBackgroundColor,
+              //     ],
+              //     begin: Alignment.topCenter,
+              //     end: Alignment.bottomCenter,
+              //   ),
+              // ),
             ),
           ),
         ),
@@ -1208,17 +1208,17 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
               child: Container(
                 height: 100,
                 width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
-                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
-                      Theme.of(context).scaffoldBackgroundColor,
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
+                // decoration: BoxDecoration(
+                //   gradient: LinearGradient(
+                //     colors: [
+                //       Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
+                //       Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
+                //       Theme.of(context).scaffoldBackgroundColor,
+                //     ],
+                //     begin: Alignment.topCenter,
+                //     end: Alignment.bottomCenter,
+                //   ),
+                // ),
               ),
             ),
           ),

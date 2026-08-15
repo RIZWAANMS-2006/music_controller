@@ -27,7 +27,7 @@ Future<void> main() async {
     androidNotificationChannelName: 'Rusic Audio Playback',
     androidNotificationOngoing: true,
     androidStopForegroundOnPause: true,
-    notificationColor: const Color(0xFFE53935), // Red accent
+    notificationColor: const Color(0xFFE53935),
     androidShowNotificationBadge: true,
   );
   JustAudioMediaKit.ensureInitialized();
@@ -61,11 +61,10 @@ Future<void> main() async {
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
 
   // Set Preferred Orientations and System UI Mode
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+  // await SystemChrome.setPreferredOrientations([
+  //   DeviceOrientation.portraitUp,
+  //   DeviceOrientation.portraitDown,
+  // ]);
 
   // Set Window Size Constraints for Desktop Platforms
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
@@ -86,37 +85,100 @@ int navigationIndex = 1;
 //   const NavigationDestination(icon: Icon(Icons.settings), label: "Settings"),
 // ];
 
-List<SalomonBottomBarItem> navigationBarDestinationsItems = [
-  SalomonBottomBarItem(
-    icon: const Icon(Icons.search),
-    title: const Text("Search"),
-  ),
+List<SalomonBottomBarItem> getNavigationBarDestinations(BuildContext context) =>
+    [
+      SalomonBottomBarItem(
+        icon: SvgPicture.asset(
+          "assets/MusicIcons/search.svg",
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).textTheme.bodyLarge!.color!,
+            BlendMode.srcIn,
+          ),
+        ),
+        title: const Text("Search"),
+        activeIcon: SvgPicture.asset(
+          "assets/MusicIcons/search.svg",
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).colorScheme.primary,
+            BlendMode.srcIn,
+          ),
+        ),
+      ),
 
-  SalomonBottomBarItem(icon: const Icon(Icons.home), title: const Text("Home")),
+      SalomonBottomBarItem(
+        icon: SvgPicture.asset(
+          "assets/MusicIcons/home.svg",
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).textTheme.bodyLarge!.color!,
+            BlendMode.srcIn,
+          ),
+        ),
+        title: const Text("Home"),
+        activeIcon: SvgPicture.asset(
+          "assets/MusicIcons/home.svg",
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).colorScheme.primary,
+            BlendMode.srcIn,
+          ),
+        ),
+      ),
 
-  SalomonBottomBarItem(
-    icon: const Icon(Icons.settings),
-    title: const Text("Settings"),
-  ),
-];
+      SalomonBottomBarItem(
+        icon: SvgPicture.asset(
+          "assets/MusicIcons/settings.svg",
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).textTheme.bodyLarge!.color!,
+            BlendMode.srcIn,
+          ),
+        ),
+        title: const Text("Settings"),
+        activeIcon: SvgPicture.asset(
+          "assets/MusicIcons/settings.svg",
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).colorScheme.primary,
+            BlendMode.srcIn,
+          ),
+        ),
+      ),
+    ];
 
 // Navigation Rail Destinations
-const List<NavigationRailDestination> navigationRailDestinationsItems = [
+List<NavigationRailDestination> getNavigationRailDestinations(
+  BuildContext context,
+) => [
   NavigationRailDestination(
-    icon: Icon(Icons.search),
-    selectedIcon: Icon(Icons.search),
-    label: Text("Search"),
-    padding: EdgeInsets.symmetric(vertical: 5),
+    icon: SvgPicture.asset(
+      "assets/MusicIcons/search.svg",
+      colorFilter: ColorFilter.mode(
+        Theme.of(context).textTheme.bodyLarge!.color!,
+        BlendMode.srcIn,
+      ),
+    ),
+    selectedIcon: const Icon(Icons.search),
+    label: const Text("Search"),
+    padding: const EdgeInsets.symmetric(vertical: 5),
   ),
   NavigationRailDestination(
-    icon: Icon(Icons.library_music),
-    label: Text("Home"),
-    padding: EdgeInsets.symmetric(vertical: 5),
+    icon: SvgPicture.asset(
+      "assets/MusicIcons/home.svg",
+      colorFilter: ColorFilter.mode(
+        Theme.of(context).textTheme.bodyLarge!.color!,
+        BlendMode.srcIn,
+      ),
+    ),
+    label: const Text("Home"),
+    padding: const EdgeInsets.symmetric(vertical: 5),
   ),
   NavigationRailDestination(
-    icon: Icon(Icons.settings),
-    label: Text("Settings"),
-    padding: EdgeInsets.symmetric(vertical: 5),
+    icon: SvgPicture.asset(
+      "assets/MusicIcons/settings.svg",
+      colorFilter: ColorFilter.mode(
+        Theme.of(context).textTheme.bodyLarge!.color!,
+        BlendMode.srcIn,
+      ),
+    ),
+    label: const Text("Settings"),
+    padding: const EdgeInsets.symmetric(vertical: 5),
   ),
 ];
 
@@ -187,7 +249,7 @@ class WideScreenState extends State<WideScreen> {
         children: [
           NavigationRail(
             // extended: true,
-            destinations: navigationRailDestinationsItems,
+            destinations: getNavigationRailDestinations(context),
             groupAlignment: 0,
             // backgroundColor: const Color.fromRGBO(26, 26, 26, 1),
             labelType: NavigationRailLabelType.selected,
@@ -326,27 +388,36 @@ class CompactScreenState extends State<CompactScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      ClipRRect(
-                        key: _navBarKey,
+                      PhysicalModel(
+                        color: Colors.black,
+                        elevation: 15,
                         borderRadius: const BorderRadius.all(
-                          Radius.circular(40),
+                          Radius.circular(30),
                         ),
-                        child: SalomonBottomBar(
-                          backgroundColor: setAppBarColor(context),
-                          items: navigationBarDestinationsItems,
-                          currentIndex: navigationIndex,
-                          onTap: (i) => setState(() {
-                            navigationIndex = i;
-                            _isVisible = true;
-                          }),
-                          itemPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
+                        child: ClipRRect(
+                          key: _navBarKey,
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(40),
                           ),
-                          selectedItemColor: Colors.red,
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
+                          child: SalomonBottomBar(
+                            backgroundColor: setAppBarColor(context),
+                            items: getNavigationBarDestinations(context),
+                            currentIndex: navigationIndex,
+                            onTap: (i) => setState(() {
+                              navigationIndex = i;
+                              _isVisible = true;
+                            }),
+                            itemPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            selectedItemColor: Theme.of(
+                              context,
+                            ).colorScheme.primary,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
                           ),
                         ),
                       ),

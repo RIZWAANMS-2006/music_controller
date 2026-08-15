@@ -99,21 +99,21 @@ class _SettingsState extends State<Settings> {
               child: Container(
                 height: 100,
                 width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(
-                        context,
-                      ).scaffoldBackgroundColor.withValues(alpha: 0.0),
-                      Theme.of(
-                        context,
-                      ).scaffoldBackgroundColor.withValues(alpha: 0.8),
-                      Theme.of(context).scaffoldBackgroundColor,
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
+                // decoration: BoxDecoration(
+                  // gradient: LinearGradient(
+                  //   colors: [
+                  //     Theme.of(
+                  //       context,
+                  //     ).scaffoldBackgroundColor.withValues(alpha: 0.0),
+                  //     Theme.of(
+                  //       context,
+                  //     ).scaffoldBackgroundColor.withValues(alpha: 0.8),
+                  //     Theme.of(context).scaffoldBackgroundColor,
+                  //   ],
+                  //   begin: Alignment.topCenter,
+                  //   end: Alignment.bottomCenter,
+                  // ),
+                // ),
               ),
             ),
           ),
