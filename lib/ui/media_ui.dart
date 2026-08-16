@@ -1,3 +1,4 @@
+import 'package:Rusic/managers/settings_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
@@ -7,6 +8,8 @@ import 'package:shimmer/shimmer.dart';
 import 'package:Rusic/managers/songs_manager.dart';
 import 'package:Rusic/managers/database_manager.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
+import "dart:math" as math;
+import 'package:bounce/bounce.dart';
 
 /// A universal UI component for displaying media files across different tabs.
 ///
@@ -348,8 +351,16 @@ class _MediaUIState extends State<MediaUI> {
                   return [
                     // Section header – tap to open letter picker
                     SliverToBoxAdapter(
-                      child: GestureDetector(
-                        onTap: _showLetterPicker,
+                      child: Bounce(
+                        tilt: false,
+                        duration: const Duration(milliseconds: 100),
+                        scaleFactor: 0.9,
+                        onTap: () async {
+                          await Future.delayed(const Duration(milliseconds: 100));
+                          if (mounted) {
+                            _showLetterPicker();
+                          }
+                        },
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
                           child: Text(
@@ -384,27 +395,27 @@ class _MediaUIState extends State<MediaUI> {
             ),
           ),
           // Bottom gradient fade
-          Positioned(
-            bottom: 0,
-            child: IgnorePointer(
-              child: Container(
-                height: 100,
-                width: MediaQuery.of(context).size.width,
-                // decoration: BoxDecoration(
-                // gradient: LinearGradient(
-                //   colors: [
-                //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
-                //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
-                //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 1),
-                //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 2),
-                //   ],
-                //   begin: Alignment.topCenter,
-                //   end: Alignment.bottomCenter,
-                // ),
-                // ),
-              ),
-            ),
-          ),
+          // Positioned(
+          //   bottom: 0,
+          //   child: IgnorePointer(
+          //     child: SizedBox(
+          //       height: 100,
+          //       width: MediaQuery.of(context).size.width,
+          // decoration: BoxDecoration(
+          // gradient: LinearGradient(
+          //   colors: [
+          //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
+          //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
+          //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 1),
+          //     Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 2),
+          //   ],
+          //   begin: Alignment.topCenter,
+          //   end: Alignment.bottomCenter,
+          // ),
+          // ),
+          //   ),
+          // ),
+          // ),
         ],
       ),
     );
@@ -467,8 +478,16 @@ class _MediaUIState extends State<MediaUI> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (showHeader)
-                        GestureDetector(
-                          onTap: _showLetterPicker,
+                        Bounce(
+                          tilt: false,
+                          duration: const Duration(milliseconds: 100),
+                          scaleFactor: 0.9,
+                          onTap: () async {
+                            await Future.delayed(const Duration(milliseconds: 100));
+                            if (mounted) {
+                              _showLetterPicker();
+                            }
+                          },
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                             child: Text(
@@ -520,8 +539,16 @@ class _MediaUIState extends State<MediaUI> {
       file.path.lastIndexOf(Platform.pathSeparator) + 1,
     );
 
-    return GestureDetector(
-      onTap: () => _onFileTap(file),
+    return Bounce(
+      tilt: false,
+      duration: const Duration(milliseconds: 100),
+      scaleFactor: 0.9,
+      onTap: () async {
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (mounted) {
+          _onFileTap(file);
+        }
+      },
       child: AnimatedScale(
         scale: (hoverIndex == index) ? 1.015 : 1,
         duration: const Duration(milliseconds: 75),
@@ -644,9 +671,7 @@ class _MediaUIState extends State<MediaUI> {
               color: Colors.white,
               borderRadius: BorderRadius.all(Radius.circular(5)),
             ),
-            child: SvgPicture.asset(
-              "assets/MusicIcons/music_logo_black.svg",
-            ),
+            child: SvgPicture.asset("assets/MusicIcons/music_logo_black.svg"),
           ),
           title: Text(
             fileName,
@@ -894,37 +919,62 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
 
   Widget _buildLoadingState() {
     final isDesktop = MediaQuery.of(context).size.width > 700;
+    final isNonOnline = widget.title != 'Online';
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: _buildAppBar(isLoading: true),
-      body: Shimmer.fromColors(
-        baseColor: Colors.grey[850]!,
-        highlightColor: Colors.grey[700]!,
-        child: isDesktop ? const _DesktopShimmer() : const _MobileShimmer(),
+      appBar: isNonOnline ? null : _buildAppBar(isLoading: true),
+      body: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+        child: CustomScrollView(
+          slivers: [
+            if (isNonOnline) _buildSliverNavigationBar(),
+            SliverFillRemaining(
+              child: Shimmer.fromColors(
+                baseColor: Colors.grey[850]!,
+                highlightColor: Colors.grey[700]!,
+                child: isDesktop
+                    ? const _DesktopShimmer()
+                    : const _MobileShimmer(),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildErrorState(String error) {
+    final isNonOnline = widget.title != 'Online';
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: _buildAppBar(),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
-            const SizedBox(height: 16),
-            const Text(
-              'Error loading songs',
-              style: TextStyle(color: Colors.white, fontSize: 18),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              error,
-              style: const TextStyle(color: Colors.grey, fontSize: 14),
-              textAlign: TextAlign.center,
+      appBar: isNonOnline ? null : _buildAppBar(),
+      body: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+        child: CustomScrollView(
+          slivers: [
+            if (isNonOnline) _buildSliverNavigationBar(),
+            SliverFillRemaining(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Error loading songs',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      error,
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -933,37 +983,92 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
   }
 
   Widget _buildEmptyState() {
+    final isNonOnline = widget.title != 'Online';
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: _buildAppBar(),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.cloud_off, size: 64, color: Colors.grey),
-              const SizedBox(height: 16),
-              Text(
-                widget.emptyMessage,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 18),
+      appBar: isNonOnline ? null : _buildAppBar(),
+      body: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+        child: CustomScrollView(
+          slivers: [
+            if (isNonOnline) _buildSliverNavigationBar(),
+            SliverFillRemaining(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.cloud_off, size: 64, color: Colors.grey),
+                      const SizedBox(height: 16),
+                      Text(
+                        widget.emptyMessage,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'No songs available in this table',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 8),
-              const Text(
-                'No songs available in this table',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey, fontSize: 14),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  AppBar _buildAppBar({List<OnlineSong>? songs, bool isLoading = false}) {
+  Widget _buildSliverNavigationBar() {
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
+
+    return CupertinoSliverNavigationBar(
+      stretch: true,
+      backgroundColor: setAppBarColor(context),
+      largeTitle: Text(widget.title),
+      alwaysShowMiddle: false,
+      transitionBetweenRoutes: false,
+      border: Border(bottom: BorderSide(color: setAppBarBorderColor(context))),
+      leading: canPop
+          ? IconButton(
+              padding: const EdgeInsets.all(0),
+              hoverColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              splashColor: Colors.transparent,
+              focusColor: Colors.transparent,
+              style: const ButtonStyle(
+                overlayColor: WidgetStatePropertyAll(Colors.transparent),
+              ),
+              iconSize: 12,
+              icon: Transform.rotate(
+                angle: math.pi / 2,
+                child: SvgPicture.asset(
+                  "assets/MusicIcons/down_arrow.svg",
+                  width: 12,
+                  height: 12,
+                  colorFilter: ColorFilter.mode(
+                    Theme.of(context).iconTheme.color ?? Colors.white,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+              onPressed: () => Navigator.maybePop(context),
+            )
+          : null,
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar({
+    List<OnlineSong>? songs,
+    bool isLoading = false,
+  }) {
     final isDesktop = MediaQuery.of(context).size.width > 700;
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
 
     Set<String> sources = {};
     if (songs != null) {
@@ -1041,8 +1146,6 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
         });
       },
     );
-
-    final canPop = ModalRoute.of(context)?.canPop ?? false;
 
     return AppBar(
       title: searchField,
@@ -1150,9 +1253,10 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
   Widget _buildDesktopLayout(List<OnlineSong> displaySongs) {
     final groupedSongs = _groupSongsByLetter(displaySongs);
     final sortedLetters = groupedSongs.keys.toList()..sort();
+    final isNonOnline = widget.title != 'Online';
 
     return Scaffold(
-      appBar: _buildAppBar(songs: displaySongs),
+      appBar: isNonOnline ? null : _buildAppBar(songs: displaySongs),
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
@@ -1167,6 +1271,7 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
                 parent: AlwaysScrollableScrollPhysics(),
               ),
               slivers: [
+                if (isNonOnline) _buildSliverNavigationBar(),
                 // Build sections for each letter
                 ...(() {
                   return sortedLetters.expand((letter) {
@@ -1174,8 +1279,16 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
                     return [
                       // Section header – tap to open letter picker
                       SliverToBoxAdapter(
-                        child: GestureDetector(
-                          onTap: _showLetterPicker,
+                        child: Bounce(
+                          tilt: false,
+                          duration: const Duration(milliseconds: 100),
+                          scaleFactor: 0.9,
+                          onTap: () async {
+                            await Future.delayed(const Duration(milliseconds: 100));
+                            if (mounted) {
+                              _showLetterPicker();
+                            }
+                          },
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
                             child: Text(
@@ -1217,17 +1330,6 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
               child: Container(
                 height: 100,
                 width: MediaQuery.of(context).size.width,
-                // decoration: BoxDecoration(
-                //   gradient: LinearGradient(
-                //     colors: [
-                //       Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
-                //       Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
-                //       Theme.of(context).scaffoldBackgroundColor,
-                //     ],
-                //     begin: Alignment.topCenter,
-                //     end: Alignment.bottomCenter,
-                //   ),
-                // ),
               ),
             ),
           ),
@@ -1237,59 +1339,78 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
   }
 
   Widget _buildMobileLayout(List<OnlineSong> displaySongs) {
+    final isNonOnline = widget.title != 'Online';
+
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: _buildAppBar(songs: displaySongs),
+      appBar: isNonOnline ? null : _buildAppBar(songs: displaySongs),
       body: Stack(
         children: [
           ScrollConfiguration(
             behavior: ScrollConfiguration.of(
               context,
             ).copyWith(scrollbars: false),
-            child: ListView.builder(
+            child: CustomScrollView(
               controller:
                   PrimaryScrollController.maybeOf(context) ?? _scrollController,
-              itemCount: displaySongs.length,
-              itemBuilder: (context, index) {
-                final song = displaySongs[index];
-                final currentLetter = song.title.isNotEmpty
-                    ? song.title[0].toUpperCase()
-                    : '#';
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              slivers: [
+                if (isNonOnline) _buildSliverNavigationBar(),
+                SliverList.builder(
+                  itemCount: displaySongs.length,
+                  itemBuilder: (context, index) {
+                    final song = displaySongs[index];
+                    final currentLetter = song.title.isNotEmpty
+                        ? song.title[0].toUpperCase()
+                        : '#';
 
-                // Check if this is the first item of a new letter section
-                bool showHeader = false;
-                if (index == 0) {
-                  showHeader = true;
-                } else {
-                  final prevSong = displaySongs[index - 1];
-                  final prevLetter = prevSong.title.isNotEmpty
-                      ? prevSong.title[0].toUpperCase()
-                      : '#';
-                  showHeader = currentLetter != prevLetter;
-                }
+                    // Check if this is the first item of a new letter section
+                    bool showHeader = false;
+                    if (index == 0) {
+                      showHeader = true;
+                    } else {
+                      final prevSong = displaySongs[index - 1];
+                      final prevLetter = prevSong.title.isNotEmpty
+                          ? prevSong.title[0].toUpperCase()
+                          : '#';
+                      showHeader = currentLetter != prevLetter;
+                    }
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (showHeader)
-                      GestureDetector(
-                        onTap: _showLetterPicker,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                          child: Text(
-                            currentLetter,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary,
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (showHeader)
+                          Bounce(
+                            tilt: false,
+                            duration: const Duration(milliseconds: 100),
+                            scaleFactor: 0.9,
+                            onTap: () async {
+                              await Future.delayed(const Duration(milliseconds: 100));
+                              if (mounted) {
+                                _showLetterPicker();
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                              child: Text(
+                                currentLetter,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    _buildListItem(song, index),
-                  ],
-                );
-              },
+                        _buildListItem(song, index),
+                      ],
+                    );
+                  },
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 170)),
+              ],
             ),
           ),
           // Bottom gradient fade
@@ -1323,8 +1444,16 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
   }
 
   Widget _buildGridItem(OnlineSong song, int index) {
-    return GestureDetector(
-      onTap: () => _onSongTap(song),
+    return Bounce(
+      tilt: false,
+      duration: const Duration(milliseconds: 100),
+      scaleFactor: 0.9,
+      onTap: () async {
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (mounted) {
+          _onSongTap(song);
+        }
+      },
       child: AnimatedScale(
         scale: (hoverIndex == index) ? 1.015 : 1,
         duration: const Duration(milliseconds: 75),
@@ -1461,9 +1590,7 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
               color: Colors.white,
               borderRadius: BorderRadius.all(Radius.circular(5)),
             ),
-            child: SvgPicture.asset(
-              "assets/MusicIcons/music_logo_black.svg",
-            ),
+            child: SvgPicture.asset("assets/MusicIcons/music_logo_black.svg"),
           ),
           title: Text(
             song.title,
@@ -1669,22 +1796,34 @@ class LetterPickerDialog extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final letter = _letters[index];
                     final isAvailable = letterToIndex.containsKey(letter);
-                    return GestureDetector(
-                      onTap: isAvailable
-                          ? () => onLetterSelected(letter)
-                          : null,
-                      behavior: HitTestBehavior.opaque,
-                      child: Center(
+                    if (!isAvailable) {
+                      return Center(
                         child: Text(
                           letter,
                           style: TextStyle(
-                            color: isAvailable
-                                ? Colors.white
-                                : Colors.white.withOpacity(0.22),
+                            color: Colors.white.withOpacity(0.22),
                             fontSize: 22,
-                            fontWeight: isAvailable
-                                ? FontWeight.w400
-                                : FontWeight.w300,
+                            fontWeight: FontWeight.w300,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      );
+                    }
+                    return Bounce(
+                      tilt: false,
+                      duration: const Duration(milliseconds: 100),
+                      scaleFactor: 0.9,
+                      onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 100));
+                        onLetterSelected(letter);
+                      },
+                      child: Center(
+                        child: Text(
+                          letter,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w400,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -1825,140 +1964,278 @@ Future<void> showAddToPlaylistDialog(
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setState) {
-          return AlertDialog(
+          return Dialog(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            title: Text(
-              isCreating ? "Create Playlist" : "Add to Playlist",
-              style: TextStyle(
-                color: Theme.of(context).textTheme.bodyLarge?.color,
+
+            insetPadding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Text(
+                      "Add to Playlist",
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                        fontFamily: SettingsManager.fontFamily.value,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4),
+                      child: Divider(),
+                    ),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minWidth: double.infinity,
+                        minHeight: 50,
+                      ),
+                      child: ListTile(
+                        leading: Container(
+                          width: 32,
+                          height: 32,
+                          margin: const EdgeInsets.only(top: 6),
+                          padding: const EdgeInsets.all(5),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.all(Radius.circular(5)),
+                          ),
+                          child: SvgPicture.asset(
+                            "assets/MusicIcons/music_logo_black.svg",
+                          ),
+                        ),
+                        title: Text(
+                          "Playlist1",
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontFamily: SettingsManager.fontFamily.value,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          "120 Songs",
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontFamily: SettingsManager.fontFamily.value,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minWidth: double.infinity,
+                        minHeight: 50,
+                      ),
+                      child: ListTile(
+                        leading: Container(
+                          width: 32,
+                          height: 32,
+                          margin: const EdgeInsets.only(top: 6),
+                          padding: const EdgeInsets.all(5),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.all(Radius.circular(5)),
+                          ),
+                          child: SvgPicture.asset(
+                            "assets/MusicIcons/music_logo_black.svg",
+                          ),
+                        ),
+                        title: Text(
+                          "Playlist2",
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontFamily: SettingsManager.fontFamily.value,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          "120 Songs",
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontFamily: SettingsManager.fontFamily.value,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minWidth: double.infinity,
+                        minHeight: 50,
+                      ),
+                      child: ListTile(
+                        leading: Container(
+                          width: 32,
+                          height: 32,
+                          margin: const EdgeInsets.only(top: 6),
+                          padding: const EdgeInsets.all(5),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.all(Radius.circular(5)),
+                          ),
+                          child: const Icon(
+                            Icons.playlist_add_sharp,
+                            color: Colors.black,
+                            weight: 0.1,
+                          ),
+                        ),
+                        title: Text(
+                          "Create Playlist",
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontFamily: SettingsManager.fontFamily.value,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          "Create a new Playlist",
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontFamily: SettingsManager.fontFamily.value,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            content: SizedBox(
-              width: double.maxFinite,
-              height: 300,
-              child: isCreating
-                  ? Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextField(
-                          autofocus: true,
-                          style: TextStyle(
-                            color: Theme.of(context).textTheme.bodyLarge?.color,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: "Playlist Name",
-                            labelStyle: const TextStyle(color: Colors.grey),
-                            border: const OutlineInputBorder(),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
-                          ),
-                          onChanged: (val) => newPlaylistName = val,
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            TextButton(
-                              onPressed: () =>
-                                  setState(() => isCreating = false),
-                              child: const Text(
-                                "Cancel",
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.primary,
-                                foregroundColor: Colors.white,
-                              ),
-                              onPressed: () async {
-                                if (newPlaylistName.trim().isNotEmpty) {
-                                  await DatabaseManager.instance.createPlaylist(
-                                    newPlaylistName.trim(),
-                                  );
-                                  setState(() => isCreating = false);
-                                }
-                              },
-                              child: const Text("Create"),
-                            ),
-                          ],
-                        ),
-                      ],
-                    )
-                  : FutureBuilder<List<Map<String, dynamic>>>(
-                      future: DatabaseManager.instance.getPlaylists(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        final playlists = snapshot.data ?? [];
-                        return ListView.builder(
-                          itemCount: playlists.length + 1,
-                          itemBuilder: (context, index) {
-                            if (index == 0) {
-                              return ListTile(
-                                leading: const Icon(
-                                  Icons.add,
-                                  color: Colors.grey,
-                                ),
-                                title: const Text(
-                                  "Create New Playlist",
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                                onTap: () => setState(() => isCreating = true),
-                              );
-                            }
-                            final playlist = playlists[index - 1];
-                            return ListTile(
-                              leading: Icon(
-                                Icons.queue_music,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              title: Text(
-                                playlist['name'],
-                                style: TextStyle(
-                                  color: Theme.of(
-                                    context,
-                                  ).textTheme.bodyLarge?.color,
-                                ),
-                              ),
-                              onTap: () async {
-                                await DatabaseManager.instance
-                                    .addSongToPlaylist(
-                                      playlist['id'] as int,
-                                      url,
-                                      title,
-                                      artist,
-                                      source,
-                                    );
-                                if (context.mounted) {
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Added to ${playlist['name']}',
-                                      ),
-                                    ),
-                                  );
-                                }
-                              },
-                            );
-                          },
-                        );
-                      },
-                    ),
-            ),
+            // content: SizedBox(
+            //   width: double.maxFinite,
+            //   height: 300,
+            //   child: isCreating
+            //       ? Column(
+            //           mainAxisSize: MainAxisSize.min,
+            //           children: [
+            //             TextField(
+            //               autofocus: true,
+            //               style: TextStyle(
+            //                 color: Theme.of(context).textTheme.bodyLarge?.color,
+            //               ),
+            //               decoration: InputDecoration(
+            //                 labelText: "Playlist Name",
+            //                 labelStyle: const TextStyle(color: Colors.grey),
+            //                 border: const OutlineInputBorder(),
+            //                 focusedBorder: OutlineInputBorder(
+            //                   borderSide: BorderSide(
+            //                     color: Theme.of(context).colorScheme.primary,
+            //                   ),
+            //                 ),
+            //               ),
+            //               onChanged: (val) => newPlaylistName = val,
+            //             ),
+            //             const SizedBox(height: 20),
+            //             Row(
+            //               mainAxisAlignment: MainAxisAlignment.end,
+            //               children: [
+            //                 TextButton(
+            //                   onPressed: () =>
+            //                       setState(() => isCreating = false),
+            //                   child: const Text(
+            //                     "Cancel",
+            //                     style: TextStyle(color: Colors.grey),
+            //                   ),
+            //                 ),
+            //                 ElevatedButton(
+            //                   style: ElevatedButton.styleFrom(
+            //                     backgroundColor: Theme.of(
+            //                       context,
+            //                     ).colorScheme.primary,
+            //                     foregroundColor: Colors.white,
+            //                   ),
+            //                   onPressed: () async {
+            //                     if (newPlaylistName.trim().isNotEmpty) {
+            //                       await DatabaseManager.instance.createPlaylist(
+            //                         newPlaylistName.trim(),
+            //                       );
+            //                       setState(() => isCreating = false);
+            //                     }
+            //                   },
+            //                   child: const Text("Create"),
+            //                 ),
+            //               ],
+            //             ),
+            //           ],
+            //         )
+            //       : FutureBuilder<List<Map<String, dynamic>>>(
+            //           future: DatabaseManager.instance.getPlaylists(),
+            //           builder: (context, snapshot) {
+            //             if (snapshot.connectionState ==
+            //                 ConnectionState.waiting) {
+            //               return const Center(
+            //                 child: CircularProgressIndicator(),
+            //               );
+            //             }
+            //             final playlists = snapshot.data ?? [];
+            //             return ListView.builder(
+            //               itemCount: playlists.length + 1,
+            //               itemBuilder: (context, index) {
+            //                 if (index == 0) {
+            //                   return ListTile(
+            //                     leading: const Icon(
+            //                       Icons.add,
+            //                       color: Colors.grey,
+            //                     ),
+            //                     title: const Text(
+            //                       "Create New Playlist",
+            //                       style: TextStyle(color: Colors.grey),
+            //                     ),
+            //                     onTap: () => setState(() => isCreating = true),
+            //                   );
+            //                 }
+            //                 final playlist = playlists[index - 1];
+            //                 return ListTile(
+            //                   leading: Icon(
+            //                     Icons.queue_music,
+            //                     color: Theme.of(context).colorScheme.primary,
+            //                   ),
+            //                   title: Text(
+            //                     playlist['name'],
+            //                     style: TextStyle(
+            //                       color: Theme.of(
+            //                         context,
+            //                       ).textTheme.bodyLarge?.color,
+            //                     ),
+            //                   ),
+            //                   onTap: () async {
+            //                     await DatabaseManager.instance
+            //                         .addSongToPlaylist(
+            //                           playlist['id'] as int,
+            //                           url,
+            //                           title,
+            //                           artist,
+            //                           source,
+            //                         );
+            //                     if (context.mounted) {
+            //                       Navigator.pop(context);
+            //                       ScaffoldMessenger.of(context).showSnackBar(
+            //                         SnackBar(
+            //                           content: Text(
+            //                             'Added to ${playlist['name']}',
+            //                           ),
+            //                         ),
+            //                       );
+            //                     }
+            //                   },
+            //                 );
+            //               },
+            //             );
+            //           },
+            //         ),
+            // ),
           );
         },
       );

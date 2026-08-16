@@ -368,7 +368,7 @@ class CompactScreenState extends State<CompactScreen> {
             curve: Curves.easeInOut,
             offset: navigationIndex == 2
                 ? const Offset(0, 2.2)
-                : (_isVisible ? Offset.zero : const Offset(0, 1.2)),
+                : (_isVisible ? Offset.zero : const Offset(0, 1)),
             child: BottomMusicController(
               width: _navBarWidth != null ? _navBarWidth! * 1.1 : null,
             ),
@@ -383,7 +383,7 @@ class CompactScreenState extends State<CompactScreen> {
               opacity: _isVisible ? 1.0 : 0.0,
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
+                  padding: const EdgeInsets.only(bottom: 7),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,

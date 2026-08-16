@@ -2,9 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:Rusic/music_player/online_screens/online_screen.dart';
 import 'package:Rusic/music_player/location_screens/location_screen.dart';
-import 'package:Rusic/managers/database_manager.dart';
 import 'package:Rusic/managers/settings_manager.dart';
-import 'package:Rusic/ui/media_ui.dart';
 import 'package:Rusic/managers/ui_manager.dart';
 import 'package:Rusic/music_player/playlists_tab.dart';
 
@@ -58,13 +56,15 @@ class LibraryState extends State<Library>
 
   late final TabController _tabController;
 
+  final GlobalKey<NavigatorState> _libraryNavigatorKey = GlobalKey<NavigatorState>();
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(
-      length: 4,
+      length: 3,
       vsync: this,
-      initialIndex: SettingsManager.getLastLibraryTab,
+      initialIndex: SettingsManager.getLastLibraryTab.clamp(0, 2),
     );
 
     _tabController.addListener(() {
@@ -83,6 +83,32 @@ class LibraryState extends State<Library>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+
+        final navigator = _libraryNavigatorKey.currentState;
+        if (navigator != null && navigator.canPop()) {
+          navigator.pop();
+        } else {
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
+        }
+      },
+      child: Navigator(
+        key: _libraryNavigatorKey,
+        onGenerateRoute: (settings) {
+          return MaterialPageRoute(
+            builder: (context) => _buildLibrary(context),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLibrary(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
@@ -110,7 +136,6 @@ class LibraryState extends State<Library>
                       indicatorColor: Colors.red,
                       tabs: const [
                         SizedBox(width: 100, child: Tab(text: "Online")),
-                        SizedBox(width: 100, child: Tab(text: "Favourites")),
                         SizedBox(width: 100, child: Tab(text: "Playlists")),
                         SizedBox(width: 100, child: Tab(text: "Locations")),
                       ],
@@ -123,45 +148,18 @@ class LibraryState extends State<Library>
               children: [
                 TabBarView(
                   controller: _tabController,
-                  children: [
-                    const OnlineScreen(),
-                    AnimatedBuilder(
-                      animation: DatabaseManager.instance,
-                      builder: (context, _) {
-                        return OnlineMediaUI(
-                          title: "Favorites",
-                          showMusicController: true,
-                          emptyMessage: "No Favorite Yet...",
-                          songsFuture: DatabaseManager.instance
-                              .getAllFavoriteSongs(),
-                        );
-                      },
-                    ),
-                    const PlaylistsTab(),
-                    const LocationsTab(),
+                  children: const [
+                    OnlineScreen(),
+                    PlaylistsTab(),
+                    LocationsTab(),
                   ],
                 ),
                 Positioned(
                   bottom: 0,
                   child: IgnorePointer(
-                    child: Container(
+                    child: SizedBox(
                       height: 100,
                       width: MediaQuery.of(context).size.width,
-                      // decoration: BoxDecoration(
-                      //   gradient: LinearGradient(
-                      //     colors: [
-                      //       Theme.of(
-                      //         context,
-                      //       ).scaffoldBackgroundColor.withValues(alpha: 0.0),
-                      //       Theme.of(
-                      //         context,
-                      //       ).scaffoldBackgroundColor.withValues(alpha: 0.8),
-                      //       Theme.of(context).scaffoldBackgroundColor,
-                      //     ],
-                      //     begin: Alignment.topCenter,
-                      //     end: Alignment.bottomCenter,
-                      //   ),
-                      // ),
                     ),
                   ),
                 ),

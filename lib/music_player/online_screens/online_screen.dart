@@ -204,7 +204,7 @@ class OnlineScreenState extends State<OnlineScreen> {
                 Text(
                   'Please configure Supabase or Server inside Settings.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  style: TextStyle(fontSize: 14),
                 ),
               ],
             ),
