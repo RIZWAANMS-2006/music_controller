@@ -270,14 +270,29 @@ class BottomMusicControllerState extends State<BottomMusicController> {
       animation: SongsManager(),
       builder: (context, _) {
         final currentSong = SongsManager().currentSong;
-        const bounceDuration = Duration(milliseconds: 100);
-        return Bounce(
-          tilt: false,
-          duration: bounceDuration,
-          scaleFactor: 0.9,
-          onTap: () async {
-            await Future.delayed(bounceDuration);
-            if (mounted) {
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                transitionDuration: const Duration(milliseconds: 500),
+                pageBuilder: (context, animation, secondaryanimation) {
+                  return const FullSizeMusicController();
+                },
+              ),
+            );
+          },
+          onHorizontalDragEnd: (details) {
+            final velocity = details.primaryVelocity ?? 0;
+            if (velocity > 0) {
+              SongsManager().playPrevious();
+            } else if (velocity < 0) {
+              SongsManager().playNext();
+            }
+          },
+          onVerticalDragEnd: (details) {
+            final velocity = details.primaryVelocity ?? 0;
+            if (velocity < 0) {
               Navigator.push(
                 context,
                 PageRouteBuilder(
@@ -289,37 +304,12 @@ class BottomMusicControllerState extends State<BottomMusicController> {
               );
             }
           },
-          child: GestureDetector(
-            onHorizontalDragEnd: (details) {
-              final velocity = details.primaryVelocity ?? 0;
-              if (velocity > 0) {
-                SongsManager().playPrevious();
-              } else if (velocity < 0) {
-                SongsManager().playNext();
-              }
-            },
-            onVerticalDragEnd: (details) {
-              final velocity = details.primaryVelocity ?? 0;
-              if (velocity < 0) {
-                setState(() {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      transitionDuration: const Duration(milliseconds: 500),
-                      pageBuilder: (context, animation, secondaryanimation) {
-                        return const FullSizeMusicController();
-                      },
-                    ),
-                  );
-                });
-              }
-            },
-            onDoubleTap: () {
-              AudioManager().isPlaying
-                  ? AudioManager().pause()
-                  : AudioManager().resume();
-            },
-            child: Container(
+          onDoubleTap: () {
+            AudioManager().isPlaying
+                ? AudioManager().pause()
+                : AudioManager().resume();
+          },
+          child: Container(
             alignment: Alignment.center,
             width: (MediaQuery.of(context).size.width / 2),
             height: 55,
@@ -497,8 +487,7 @@ class BottomMusicControllerState extends State<BottomMusicController> {
             //   ),
             // ),
             ),
-          ),
-        );
+          );
       },
     );
   }

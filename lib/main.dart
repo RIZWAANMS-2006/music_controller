@@ -21,10 +21,10 @@ import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 Future<void> main() async {
-  // Initialize JustAudioMediaKit And Flutter Bindings
+  // Initialize Flutter Bindings and preserve native splash
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  WidgetsFlutterBinding.ensureInitialized();
+
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.rusic.app.channel.audio',
     androidNotificationChannelName: 'Rusic Audio Playback',
@@ -74,6 +74,9 @@ Future<void> main() async {
     setWindowMinSize(const Size(500, 1005)); //logical width height
     // setWindowMaxSize(const Size(10000, 10000)); //logical width height
   }
+
+  // Remove native splash screen after asynchronous setup is complete
+  FlutterNativeSplash.remove();
 
   runApp(const Rusic());
 }
