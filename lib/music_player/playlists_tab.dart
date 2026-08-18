@@ -4,6 +4,7 @@ import 'package:Rusic/managers/database_manager.dart';
 import 'package:Rusic/ui/media_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:bounce/bounce.dart';
+import 'package:Rusic/managers/settings_manager.dart';
 
 class PlaylistsTab extends StatefulWidget {
   const PlaylistsTab({super.key});
@@ -286,6 +287,75 @@ class _PlaylistsTabState extends State<PlaylistsTab> {
     );
   }
 
+  Future<void> _showCreatePlaylistDialog() async {
+    String playlistName = "";
+    final created = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            "Create Playlist",
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyLarge?.color,
+              fontFamily: SettingsManager.fontFamily.value,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: TextField(
+            autofocus: true,
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyLarge?.color,
+              fontFamily: SettingsManager.fontFamily.value,
+            ),
+            decoration: InputDecoration(
+              hintText: "Playlist Name",
+              hintStyle: const TextStyle(color: Colors.grey),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+            onChanged: (val) => playlistName = val,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text(
+                "Cancel",
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                if (playlistName.trim().isNotEmpty) {
+                  await DatabaseManager.instance.createPlaylist(
+                    playlistName.trim(),
+                  );
+                  if (context.mounted) {
+                    Navigator.pop(context, true);
+                  }
+                }
+              },
+              child: const Text("Create"),
+            ),
+          ],
+        );
+      },
+    );
+    if (created == true) {
+      setState(() {});
+    }
+  }
+
   Widget _buildAddPlaylistCard(bool isDesktop) {
     const bounceDuration = Duration(milliseconds: 100);
     return Bounce(
@@ -295,12 +365,7 @@ class _PlaylistsTabState extends State<PlaylistsTab> {
       onTap: () async {
         await Future.delayed(bounceDuration);
         if (mounted) {
-          showAddToPlaylistDialog(
-            context,
-            url: "",
-            title: "",
-            source: 'Local',
-          );
+          _showCreatePlaylistDialog();
         }
       },
       child: Container(

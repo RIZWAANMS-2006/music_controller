@@ -18,9 +18,12 @@ import 'package:Rusic/managers/ui_manager.dart';
 import 'package:Rusic/managers/widget_manager.dart';
 import 'package:toastification/toastification.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 Future<void> main() async {
   // Initialize JustAudioMediaKit And Flutter Bindings
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   WidgetsFlutterBinding.ensureInitialized();
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.rusic.app.channel.audio',

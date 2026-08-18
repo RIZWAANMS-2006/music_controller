@@ -66,6 +66,7 @@ dependencies:
   just_audio_background: ^0.0.1-beta.17
   home_widget: ^0.9.3
   bounce: ^1.0.2
+  flutter_native_splash: ^2.4.7
   
 dev_dependencies:
   flutter_test:

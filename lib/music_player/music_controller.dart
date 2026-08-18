@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide RepeatMode;
 import 'package:text_scroll/text_scroll.dart';
 import 'package:lottie/lottie.dart';
 import 'package:just_audio/just_audio.dart';
