@@ -118,8 +118,18 @@ class LibraryState extends State<Library>
             headerSliverBuilder: (context, innerbox) {
               return [
                 CupertinoSliverNavigationBar(
-                  largeTitle: const Text("Library"),
-                  middle: const Text("Library"),
+                  largeTitle: Text(
+                    "Library",
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
+                  ),
+                  middle: Text(
+                    "Library",
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
+                  ),
                   alwaysShowMiddle: false,
                   backgroundColor: setAppBarColor(context),
                   stretch: true,

@@ -108,8 +108,6 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/background_wallpapers/
-    - assets/background_wallpapers/live_wallpaper/music_control_infiniteloop_wallpaper1.mp4
-    - assets/background_wallpapers/live_wallpaper/bg_pc_image.png
     - assets/lottie_files/
     - assets/MusicIcons/
   # An image asset can refer to one or more resolution-specific "variants", see

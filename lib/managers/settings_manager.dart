@@ -16,6 +16,7 @@ class SettingsManager {
         // seedColor: const Color(0xFFF28D7B), // Coral / warm peach seed
         // surfaceContainerHighest: const Color(0xFFE29F8B), // For cards with 0.3 opacity
       ),
+      focusColor: Colors.transparent,
       navigationBarTheme: const NavigationBarThemeData(
         backgroundColor: Colors.white,
       ),
@@ -56,6 +57,7 @@ class SettingsManager {
   ThemeData get darkTheme => ThemeData(
     fontFamily: _themeFontFamily,
     brightness: Brightness.dark,
+    focusColor: Colors.transparent,
     colorScheme: ColorScheme.fromSeed(
       brightness: Brightness.dark,
       seedColor: const Color.fromARGB(255, 255, 0, 0),

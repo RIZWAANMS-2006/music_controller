@@ -53,7 +53,12 @@ class _SettingsState extends State<Settings> {
                     bottom: BorderSide(color: setAppBarBorderColor(context)),
                   ),
                   backgroundColor: setAppBarColor(context),
-                  largeTitle: const Text("Settings"),
+                  largeTitle: Text(
+                    "Settings",
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
+                  ),
                 ),
                 const SliverPadding(
                   padding: EdgeInsets.fromLTRB(10, 20, 10, 10),

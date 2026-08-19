@@ -202,6 +202,15 @@ class SongsManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Play a specific song by its index in the current queue
+  Future<void> playAtIndex(int index) async {
+    if (index >= 0 && index < _currentQueue.length) {
+      _currentIndex = index;
+      notifyListeners();
+      await _playCurrent();
+    }
+  }
+
   /// Go to the next song
   Future<void> playNext({bool isAutoPlay = false}) async {
     if (_currentQueue.isEmpty) return;

@@ -182,6 +182,9 @@ class _MusicQueueScreenState extends State<MusicQueueScreen> {
                                     ),
                                   )
                                 : null,
+                            onTap: () {
+                              songsManager.playAtIndex(index);
+                            },
                             trailing: ReorderableDragStartListener(
                               index: index,
                               child: Text(

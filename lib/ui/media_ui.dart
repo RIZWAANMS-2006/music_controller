@@ -269,7 +269,12 @@ class _MediaUIState extends State<MediaUI> {
           return CupertinoSliverNavigationBar(
             stretch: true,
             backgroundColor: setAppBarColor(context),
-            largeTitle: Text(widget.title),
+            largeTitle: Text(
+              widget.title,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+            ),
             alwaysShowMiddle: false,
             transitionBetweenRoutes: false,
             border: Border(
@@ -1034,7 +1039,10 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
     return CupertinoSliverNavigationBar(
       stretch: true,
       backgroundColor: setAppBarColor(context),
-      largeTitle: Text(widget.title),
+      largeTitle: Text(
+        widget.title,
+        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+      ),
       alwaysShowMiddle: false,
       transitionBetweenRoutes: false,
       border: Border(bottom: BorderSide(color: setAppBarBorderColor(context))),
@@ -1980,7 +1988,7 @@ Future<void> showAddToPlaylistDialog(
         child: StatefulBuilder(
           builder: (context, setState) {
             return SizedBox(
-              height: MediaQuery.of(context).size.height * 0.65,
+              height: MediaQuery.of(context).size.height * 0.4,
               child: Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).scaffoldBackgroundColor,
@@ -2026,6 +2034,17 @@ Future<void> showAddToPlaylistDialog(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
+                              "Add to Playlist",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Theme.of(
+                                  context,
+                                ).textTheme.bodyLarge?.color,
+                                fontFamily: SettingsManager.fontFamily.value,
+                              ),
+                            ),
+                            Text(
                               "Select Playlist",
                               style: TextStyle(
                                 color: Theme.of(context)
@@ -2037,17 +2056,7 @@ Future<void> showAddToPlaylistDialog(
                                 fontFamily: SettingsManager.fontFamily.value,
                               ),
                             ),
-                            Text(
-                              "Add to Playlist",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Theme.of(
-                                  context,
-                                ).textTheme.bodyLarge?.color,
-                                fontFamily: SettingsManager.fontFamily.value,
-                              ),
-                            ),
+
                             const SizedBox(height: 12),
                             Divider(
                               color: setContainerContrastColor(
@@ -2103,7 +2112,9 @@ Future<void> showAddToPlaylistDialog(
                                           ),
                                           child: const Text(
                                             "Cancel",
-                                            style: TextStyle(color: Colors.grey),
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(width: 8),
@@ -2118,11 +2129,11 @@ Future<void> showAddToPlaylistDialog(
                                             if (newPlaylistName
                                                 .trim()
                                                 .isNotEmpty) {
-                                              final newId = await DatabaseManager
-                                                  .instance
-                                                  .createPlaylist(
-                                                    newPlaylistName.trim(),
-                                                  );
+                                              final newId =
+                                                  await DatabaseManager.instance
+                                                      .createPlaylist(
+                                                        newPlaylistName.trim(),
+                                                      );
                                               if (url.isNotEmpty) {
                                                 await DatabaseManager.instance
                                                     .addSongToPlaylist(
@@ -2167,7 +2178,7 @@ Future<void> showAddToPlaylistDialog(
                                   }
                                   final playlists = snapshot.data ?? [];
                                   return ListView.builder(
-                                    itemCount: playlists.length + 2,
+                                    itemCount: playlists.length + 4,
                                     itemBuilder: (context, index) {
                                       if (index == 0) {
                                         return ListTile(
@@ -2220,25 +2231,120 @@ Future<void> showAddToPlaylistDialog(
                                                   ?.withValues(alpha: 0.7),
                                             ),
                                           ),
-                                          onTap: () => setState(
-                                            () => isCreating = true,
-                                          ),
+                                          onTap: () =>
+                                              setState(() => isCreating = true),
                                         );
                                       }
                                       if (index == 1) {
                                         return ListTile(
                                           dense: true,
-                                          contentPadding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 2,
-                                          ),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 16,
+                                                vertical: 2,
+                                              ),
                                           leading: Container(
                                             width: 32,
                                             height: 32,
                                             padding: const EdgeInsets.all(5),
                                             decoration: const BoxDecoration(
                                               color: Colors.white,
-                                              borderRadius: BorderRadius.all(Radius.circular(5)),
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(5),
+                                              ),
+                                            ),
+                                            child: const Icon(
+                                              Icons.favorite,
+                                              color: Colors.black,
+                                              size: 20,
+                                            ),
+                                          ),
+                                          title: Text(
+                                            "Favourite",
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontFamily: SettingsManager
+                                                  .fontFamily
+                                                  .value,
+                                              fontWeight: FontWeight.w500,
+                                              color: Theme.of(
+                                                context,
+                                              ).textTheme.bodyLarge?.color,
+                                            ),
+                                          ),
+                                          subtitle:
+                                              FutureBuilder<List<String>>(
+                                                future: DatabaseManager.instance
+                                                    .getAllFavorites(),
+                                                builder: (context, favSnap) {
+                                                  final favCount =
+                                                      favSnap.data?.length ?? 0;
+                                                  return Text(
+                                                    "$favCount Songs",
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      fontFamily:
+                                                          SettingsManager
+                                                              .fontFamily
+                                                              .value,
+                                                      color: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyMedium
+                                                          ?.color
+                                                          ?.withValues(
+                                                            alpha: 0.7,
+                                                          ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                          onTap: () async {
+                                            final isFav = await DatabaseManager
+                                                .instance
+                                                .isFavorite(url);
+                                            if (!isFav) {
+                                              await DatabaseManager.instance
+                                                  .toggleFavoriteOnline(
+                                                    url,
+                                                    title,
+                                                    artist,
+                                                    source,
+                                                  );
+                                            }
+                                            if (context.mounted) {
+                                              Navigator.pop(context);
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    !isFav
+                                                        ? 'Added to Favourite'
+                                                        : 'Already in Favourite',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        );
+                                      }
+                                      if (index == 2) {
+                                        return ListTile(
+                                          dense: true,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 16,
+                                                vertical: 2,
+                                              ),
+                                          leading: Container(
+                                            width: 32,
+                                            height: 32,
+                                            padding: const EdgeInsets.all(5),
+                                            decoration: const BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(5),
+                                              ),
                                             ),
                                             child: const Icon(
                                               Icons.music_note,
@@ -2250,25 +2356,113 @@ Future<void> showAddToPlaylistDialog(
                                             "Playlist 1",
                                             style: TextStyle(
                                               fontSize: 14,
-                                              fontFamily: SettingsManager.fontFamily.value,
+                                              fontFamily: SettingsManager
+                                                  .fontFamily
+                                                  .value,
                                               fontWeight: FontWeight.w500,
-                                              color: Theme.of(context).textTheme.bodyLarge?.color,
+                                              color: Theme.of(
+                                                context,
+                                              ).textTheme.bodyLarge?.color,
                                             ),
                                           ),
                                           subtitle: Text(
                                             "120 Songs",
                                             style: TextStyle(
                                               fontSize: 10,
-                                              fontFamily: SettingsManager.fontFamily.value,
-                                              color: Theme.of(
-                                                context,
-                                              ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                                              fontFamily: SettingsManager
+                                                  .fontFamily
+                                                  .value,
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.color
+                                                  ?.withValues(alpha: 0.7),
                                             ),
                                           ),
-                                          // onTap: () => setState(() => isCreating = true),
+                                          onTap: () {
+                                            if (context.mounted) {
+                                              Navigator.pop(context);
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Added to Playlist 1',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          },
                                         );
                                       }
-                                      final playlist = playlists[index - 2];
+                                      if (index == 3) {
+                                        return ListTile(
+                                          dense: true,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 16,
+                                                vertical: 2,
+                                              ),
+                                          leading: Container(
+                                            width: 32,
+                                            height: 32,
+                                            padding: const EdgeInsets.all(5),
+                                            decoration: const BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(5),
+                                              ),
+                                            ),
+                                            child: const Icon(
+                                              Icons.music_note,
+                                              color: Colors.black,
+                                              size: 20,
+                                            ),
+                                          ),
+                                          title: Text(
+                                            "Playlist 2",
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontFamily: SettingsManager
+                                                  .fontFamily
+                                                  .value,
+                                              fontWeight: FontWeight.w500,
+                                              color: Theme.of(
+                                                context,
+                                              ).textTheme.bodyLarge?.color,
+                                            ),
+                                          ),
+                                          subtitle: Text(
+                                            "50 Songs",
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontFamily: SettingsManager
+                                                  .fontFamily
+                                                  .value,
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.color
+                                                  ?.withValues(alpha: 0.7),
+                                            ),
+                                          ),
+                                          onTap: () {
+                                            if (context.mounted) {
+                                              Navigator.pop(context);
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Added to Playlist 2',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        );
+                                      }
+                                      final playlist = playlists[index - 4];
                                       return ListTile(
                                         dense: true,
                                         contentPadding:
@@ -2306,29 +2500,31 @@ Future<void> showAddToPlaylistDialog(
                                         ),
                                         subtitle:
                                             FutureBuilder<List<OnlineSong>>(
-                                          future: DatabaseManager.instance
-                                              .getPlaylistSongs(
-                                                playlist['id'] as int,
-                                              ),
-                                          builder: (context, songSnap) {
-                                            final songCount =
-                                                songSnap.data?.length ?? 0;
-                                            return Text(
-                                              "$songCount Songs",
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                fontFamily: SettingsManager
-                                                    .fontFamily
-                                                    .value,
-                                                color: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyMedium
-                                                    ?.color
-                                                    ?.withValues(alpha: 0.7),
-                                              ),
-                                            );
-                                          },
-                                        ),
+                                              future: DatabaseManager.instance
+                                                  .getPlaylistSongs(
+                                                    playlist['id'] as int,
+                                                  ),
+                                              builder: (context, songSnap) {
+                                                final songCount =
+                                                    songSnap.data?.length ?? 0;
+                                                return Text(
+                                                  "$songCount Songs",
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    fontFamily: SettingsManager
+                                                        .fontFamily
+                                                        .value,
+                                                    color: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyMedium
+                                                        ?.color
+                                                        ?.withValues(
+                                                          alpha: 0.7,
+                                                        ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
                                         onTap: () async {
                                           await DatabaseManager.instance
                                               .addSongToPlaylist(
