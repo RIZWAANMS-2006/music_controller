@@ -42,10 +42,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _onLottieLoaded(LottieComposition composition) async {
-    _controller.duration = Duration(
-      milliseconds:
-          (composition.duration.inMilliseconds / 1.5).round(),
-    );
+    _controller.duration = composition.duration;
     _controller.reset();
 
     // Remove the native splash screen if not already removed

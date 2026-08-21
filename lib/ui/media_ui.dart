@@ -10,6 +10,7 @@ import 'package:Rusic/managers/database_manager.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import "dart:math" as math;
 import 'package:bounce/bounce.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 /// A universal UI component for displaying media files across different tabs.
 ///
@@ -544,166 +545,21 @@ class _MediaUIState extends State<MediaUI> {
   }
 
   Widget _buildGridItem(File file, int index) {
-    final fileName = file.path.substring(
-      file.path.lastIndexOf(Platform.pathSeparator) + 1,
-    );
-
-    return Bounce(
-      tilt: false,
-      duration: const Duration(milliseconds: 100),
-      scaleFactor: 0.9,
-      onTap: () async {
-        await Future.delayed(const Duration(milliseconds: 100));
-        if (mounted) {
-          _onFileTap(file);
-        }
-      },
-      child: AnimatedScale(
-        scale: (hoverIndex == index) ? 1.015 : 1,
-        duration: const Duration(milliseconds: 75),
-        curve: Curves.linear,
-        child: MouseRegion(
-          onEnter: (_) => setState(() => hoverIndex = index),
-          onExit: (_) => setState(() => hoverIndex = -1),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-              color: setContainerColor(context),
-            ),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  fileName,
-                  textAlign: TextAlign.center,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
+    return SongView.fromFile(
+      file: file,
+      index: index,
+      allFiles: _sortedFiles,
+      isGrid: true,
     );
   }
 
   Widget _buildListItem(File file, int index) {
-    final fileName = file.path.substring(
-      file.path.lastIndexOf(Platform.pathSeparator) + 1,
+    return SongView.fromFile(
+      file: file,
+      index: index,
+      allFiles: _sortedFiles,
+      isGrid: false,
     );
-
-    return SwipeActionCell(
-      key: ValueKey(file.path),
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      trailingActions: <SwipeAction>[
-        SwipeAction(
-          icon: const Icon(Icons.close, color: Colors.white),
-          color: Colors.grey[850]!,
-          onTap: (CompletionHandler handler) async {
-            await handler(false);
-          },
-        ),
-        SwipeAction(
-          icon: const Icon(Icons.playlist_add, color: Colors.white),
-          color: Colors.grey[700]!,
-          onTap: (CompletionHandler handler) async {
-            await handler(false);
-            if (context.mounted) {
-              final title = file.path.split(Platform.pathSeparator).last;
-              await showAddToPlaylistDialog(
-                context,
-                url: file.path,
-                title: title,
-                artist: null,
-                source: 'Local',
-              );
-            }
-          },
-        ),
-        SwipeAction(
-          icon: Icon(
-            _likedFiles.contains(file.path)
-                ? Icons.favorite_rounded
-                : Icons.favorite_outline_rounded,
-            color: Colors.white,
-          ),
-          color: Colors.redAccent,
-          performsFirstActionWithFullSwipe: true,
-          onTap: (CompletionHandler handler) async {
-            await handler(false);
-
-            await DatabaseManager.instance.toggleFavorite(file.path);
-
-            if (mounted) {
-              setState(() {
-                if (_likedFiles.contains(file.path)) {
-                  _likedFiles.remove(file.path);
-                } else {
-                  _likedFiles.add(file.path);
-                }
-              });
-            }
-            // Handle like action here
-          },
-        ),
-      ],
-      leadingActions: <SwipeAction>[
-        SwipeAction(
-          icon: const Icon(Icons.queue_music, color: Colors.white),
-          color: Colors.green,
-          performsFirstActionWithFullSwipe: true,
-          onTap: (CompletionHandler handler) async {
-            await handler(false);
-            SongsManager().addToQueue(
-              QueueItem(id: file.path, title: fileName, path: file.path),
-            );
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Added $fileName to queue')),
-              );
-            }
-          },
-        ),
-      ],
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          minWidth: double.infinity,
-          minHeight: 50,
-        ),
-        child: ListTile(
-          onTap: () => _onFileTap(file),
-          leading: Container(
-            width: 35,
-            height: 35,
-            padding: const EdgeInsets.all(5),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.all(Radius.circular(5)),
-            ),
-            child: SvgPicture.asset("assets/MusicIcons/music_logo_black.svg"),
-          ),
-          title: Text(
-            fileName,
-            textAlign: TextAlign.left,
-            style: const TextStyle(fontSize: 14),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _onFileTap(File file) {
-    if (_sortedFiles.isNotEmpty) {
-      final items = _sortedFiles.map((f) {
-        final fName = f.path.substring(
-          f.path.lastIndexOf(Platform.pathSeparator) + 1,
-        );
-        return QueueItem(id: f.path, title: fName, path: f.path);
-      }).toList();
-      final index = _sortedFiles.indexOf(file);
-      SongsManager().setQueue(queue: items, startIndex: index);
-    }
   }
 
   /// Sort files alphabetically and create letter-to-index mapping
@@ -1460,192 +1316,21 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
   }
 
   Widget _buildGridItem(OnlineSong song, int index) {
-    return Bounce(
-      tilt: false,
-      duration: const Duration(milliseconds: 100),
-      scaleFactor: 0.9,
-      onTap: () async {
-        await Future.delayed(const Duration(milliseconds: 100));
-        if (mounted) {
-          _onSongTap(song);
-        }
-      },
-      child: AnimatedScale(
-        scale: (hoverIndex == index) ? 1.015 : 1,
-        duration: const Duration(milliseconds: 75),
-        curve: Curves.linear,
-        child: MouseRegion(
-          onEnter: (_) => setState(() => hoverIndex = index),
-          onExit: (_) => setState(() => hoverIndex = -1),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-              color: setContainerColor(context),
-            ),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      song.title,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                    if (song.source != null && song.source!.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        song.source!,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
+    return SongView.builder(
+      song: song,
+      index: index,
+      allSongs: _sortedSongs,
+      isGrid: true,
     );
   }
 
   Widget _buildListItem(OnlineSong song, int index) {
-    return SwipeActionCell(
-      key: ValueKey(song.url),
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      trailingActions: <SwipeAction>[
-        SwipeAction(
-          icon: const Icon(Icons.close, color: Colors.white),
-          color: Colors.grey[850]!,
-          onTap: (CompletionHandler handler) async {
-            await handler(false);
-          },
-        ),
-        SwipeAction(
-          icon: const Icon(Icons.playlist_add, color: Colors.white),
-          color: Colors.grey[700]!,
-          onTap: (CompletionHandler handler) async {
-            await handler(false);
-            if (context.mounted) {
-              await showAddToPlaylistDialog(
-                context,
-                url: song.url,
-                title: song.title,
-                artist: song.artist,
-                source: song.source,
-              );
-            }
-          },
-        ),
-        SwipeAction(
-          icon: AnimatedBuilder(
-            animation: DatabaseManager.instance,
-            builder: (context, _) {
-              return Icon(
-                DatabaseManager.instance.isFavoriteSync(song.url)
-                    ? Icons.favorite_rounded
-                    : Icons.favorite_border,
-                color: Colors.white,
-              );
-            },
-          ),
-          color: Colors.redAccent,
-          performsFirstActionWithFullSwipe: true,
-          onTap: (CompletionHandler handler) async {
-            await handler(false);
-            await DatabaseManager.instance.toggleFavoriteOnline(
-              song.url,
-              song.title,
-              song.artist,
-              song.source,
-            );
-          },
-        ),
-      ],
-      leadingActions: <SwipeAction>[
-        SwipeAction(
-          icon: const Icon(Icons.queue_music, color: Colors.white),
-          color: Colors.green,
-          onTap: (CompletionHandler handler) async {
-            await handler(false);
-            SongsManager().addToQueue(
-              QueueItem(
-                id: song.url,
-                title: song.title,
-                path: song.url,
-                artist: song.artist,
-              ),
-            );
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Added ${song.title} to queue')),
-              );
-            }
-          },
-        ),
-      ],
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          minWidth: double.infinity,
-          minHeight: 50,
-        ),
-        child: ListTile(
-          onTap: () => _onSongTap(song),
-          leading: Container(
-            width: 35,
-            height: 35,
-            padding: const EdgeInsets.all(5),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.all(Radius.circular(5)),
-            ),
-            child: SvgPicture.asset("assets/MusicIcons/music_logo_black.svg"),
-          ),
-          title: Text(
-            song.title,
-            textAlign: TextAlign.left,
-            style: const TextStyle(fontSize: 14),
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle:
-              (song.artist?.isNotEmpty == true ||
-                  song.source?.isNotEmpty == true)
-              ? Text(
-                  [
-                    song.artist,
-                    song.source,
-                  ].where((e) => e != null && e.isNotEmpty).join(' • '),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  overflow: TextOverflow.ellipsis,
-                )
-              : null,
-        ),
-      ),
+    return SongView.builder(
+      song: song,
+      index: index,
+      allSongs: _sortedSongs,
+      isGrid: false,
     );
-  }
-
-  void _onSongTap(OnlineSong song) {
-    if (song.url.isNotEmpty && _sortedSongs.isNotEmpty) {
-      final items = _sortedSongs
-          .map(
-            (s) => QueueItem(
-              id: s.url,
-              title: s.title,
-              path: s.url,
-              artist: s.artist,
-            ),
-          )
-          .toList();
-      final index = _sortedSongs.indexOf(song);
-      SongsManager().setQueue(queue: items, startIndex: index);
-    }
   }
 
   /// Sort songs alphabetically and create letter-to-index mapping
@@ -2272,32 +1957,28 @@ Future<void> showAddToPlaylistDialog(
                                               ).textTheme.bodyLarge?.color,
                                             ),
                                           ),
-                                          subtitle:
-                                              FutureBuilder<List<String>>(
-                                                future: DatabaseManager.instance
-                                                    .getAllFavorites(),
-                                                builder: (context, favSnap) {
-                                                  final favCount =
-                                                      favSnap.data?.length ?? 0;
-                                                  return Text(
-                                                    "$favCount Songs",
-                                                    style: TextStyle(
-                                                      fontSize: 10,
-                                                      fontFamily:
-                                                          SettingsManager
-                                                              .fontFamily
-                                                              .value,
-                                                      color: Theme.of(context)
-                                                          .textTheme
-                                                          .bodyMedium
-                                                          ?.color
-                                                          ?.withValues(
-                                                            alpha: 0.7,
-                                                          ),
-                                                    ),
-                                                  );
-                                                },
-                                              ),
+                                          subtitle: FutureBuilder<List<String>>(
+                                            future: DatabaseManager.instance
+                                                .getAllFavorites(),
+                                            builder: (context, favSnap) {
+                                              final favCount =
+                                                  favSnap.data?.length ?? 0;
+                                              return Text(
+                                                "$favCount Songs",
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontFamily: SettingsManager
+                                                      .fontFamily
+                                                      .value,
+                                                  color: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium
+                                                      ?.color
+                                                      ?.withValues(alpha: 0.7),
+                                                ),
+                                              );
+                                            },
+                                          ),
                                           onTap: () async {
                                             final isFav = await DatabaseManager
                                                 .instance
@@ -2563,4 +2244,833 @@ Future<void> showAddToPlaylistDialog(
       );
     },
   );
+}
+
+/// A reusable widget representing an individual song item.
+///
+/// Supports both list view (with [SwipeActionCell] actions: add to queue, add to playlist, like/favorite)
+/// and desktop grid view (with [Bounce] animation, hover effects, and rounded cards).
+class SongView extends StatefulWidget {
+  final OnlineSong song;
+  final int? index;
+  final List<OnlineSong>? allSongs;
+  final VoidCallback? onTap;
+  final bool? isGrid;
+  final bool enableSwipe;
+  final Widget? leading;
+  final Widget? trailing;
+  final double? height;
+
+  const SongView({
+    super.key,
+    required this.song,
+    this.index,
+    this.allSongs,
+    this.onTap,
+    this.isGrid,
+    this.enableSwipe = true,
+    this.leading,
+    this.trailing,
+    this.height,
+  });
+
+  /// Factory constructor for building a SongView from a local File
+  factory SongView.fromFile({
+    Key? key,
+    required File file,
+    int? index,
+    List<File>? allFiles,
+    VoidCallback? onTap,
+    bool? isGrid,
+    bool enableSwipe = true,
+    Widget? leading,
+    Widget? trailing,
+    double? height,
+  }) {
+    final fileName = file.path.substring(
+      file.path.lastIndexOf(Platform.pathSeparator) + 1,
+    );
+    final song = OnlineSong(title: fileName, url: file.path, source: 'Local');
+    final allSongs = allFiles?.map((f) {
+      final fName = f.path.substring(
+        f.path.lastIndexOf(Platform.pathSeparator) + 1,
+      );
+      return OnlineSong(title: fName, url: f.path, source: 'Local');
+    }).toList();
+
+    return SongView(
+      key: key,
+      song: song,
+      index: index,
+      allSongs: allSongs,
+      onTap: onTap,
+      isGrid: isGrid,
+      enableSwipe: enableSwipe,
+      leading: leading,
+      trailing: trailing,
+      height: height,
+    );
+  }
+
+  /// Factory constructor for building a SongView item
+  const factory SongView.builder({
+    Key? key,
+    required OnlineSong song,
+    int? index,
+    List<OnlineSong>? allSongs,
+    VoidCallback? onTap,
+    bool? isGrid,
+    bool enableSwipe,
+    Widget? leading,
+    Widget? trailing,
+    double? height,
+  }) = _SongViewWrapper;
+
+  /// Alias with PascalCase for convenience: SongView.Builder(...)
+  // ignore: non_constant_identifier_names
+  const factory SongView.Builder({
+    Key? key,
+    required OnlineSong song,
+    int? index,
+    List<OnlineSong>? allSongs,
+    VoidCallback? onTap,
+    bool? isGrid,
+    bool enableSwipe,
+    Widget? leading,
+    Widget? trailing,
+    double? height,
+  }) = _SongViewWrapper;
+
+  /// Dedicated list tile view constructor
+  const factory SongView.tile({
+    Key? key,
+    required OnlineSong song,
+    int? index,
+    List<OnlineSong>? allSongs,
+    VoidCallback? onTap,
+    bool enableSwipe,
+    Widget? leading,
+    Widget? trailing,
+  }) = _SongViewTile;
+
+  /// Dedicated grid card view constructor
+  const factory SongView.grid({
+    Key? key,
+    required OnlineSong song,
+    int? index,
+    List<OnlineSong>? allSongs,
+    VoidCallback? onTap,
+    double? height,
+  }) = _SongViewGrid;
+
+  @override
+  State<SongView> createState() => _SongViewState();
+}
+
+class _SongViewState extends State<SongView> {
+  bool _isHovered = false;
+
+  void _handleTap() {
+    if (widget.onTap != null) {
+      widget.onTap!();
+      return;
+    }
+
+    final song = widget.song;
+    if (song.url.isEmpty) return;
+
+    if (widget.allSongs != null && widget.allSongs!.isNotEmpty) {
+      final items = widget.allSongs!
+          .map(
+            (s) => QueueItem(
+              id: s.url,
+              title: s.title,
+              path: s.url,
+              artist: s.artist,
+            ),
+          )
+          .toList();
+      final idx = widget.index ?? widget.allSongs!.indexOf(song);
+      SongsManager().setQueue(queue: items, startIndex: idx >= 0 ? idx : 0);
+    } else {
+      SongsManager().setQueue(
+        queue: [
+          QueueItem(
+            id: song.url,
+            title: song.title,
+            path: song.url,
+            artist: song.artist,
+          ),
+        ],
+        startIndex: 0,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDesktopGrid =
+        widget.isGrid ?? (MediaQuery.of(context).size.width > 700);
+
+    if (isDesktopGrid) {
+      return _buildGridCard(context);
+    } else {
+      return _buildListTile(context);
+    }
+  }
+
+  Widget _buildGridCard(BuildContext context) {
+    final song = widget.song;
+
+    return Bounce(
+      tilt: false,
+      duration: const Duration(milliseconds: 100),
+      scaleFactor: 0.9,
+      onTap: () async {
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (mounted) {
+          _handleTap();
+        }
+      },
+      child: AnimatedScale(
+        scale: _isHovered ? 1.015 : 1.0,
+        duration: const Duration(milliseconds: 75),
+        curve: Curves.linear,
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
+              color: setContainerColor(context),
+            ),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      song.title,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    if (song.source != null && song.source!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        song.source!,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildListTile(BuildContext context) {
+    final song = widget.song;
+
+    final tileContent = ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: double.infinity,
+        minHeight: widget.height ?? 50,
+      ),
+      child: ListTile(
+        onTap: _handleTap,
+        leading:
+            widget.leading ??
+            Container(
+              width: 35,
+              height: 35,
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: setContainerContrastColor(context),
+                borderRadius: const BorderRadius.all(Radius.circular(5)),
+              ),
+              child: SvgPicture.asset(
+                "assets/MusicIcons/music_logo_black.svg",
+                colorFilter: ColorFilter.mode(
+                  setContainerColor(context),
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+        title: Text(
+          song.title,
+          textAlign: TextAlign.left,
+          style: const TextStyle(fontSize: 14),
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle:
+            (song.artist?.isNotEmpty == true || song.source?.isNotEmpty == true)
+            ? Text(
+                [
+                  song.artist,
+                  song.source,
+                ].where((e) => e != null && e.isNotEmpty).join(' • '),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                overflow: TextOverflow.ellipsis,
+              )
+            : null,
+        trailing: widget.trailing,
+      ),
+    );
+
+    if (!widget.enableSwipe) {
+      return tileContent;
+    }
+
+    return SwipeActionCell(
+      key: ValueKey(song.url),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      trailingActions: <SwipeAction>[
+        SwipeAction(
+          icon: const Icon(Icons.close, color: Colors.white),
+          color: Colors.grey[850]!,
+          onTap: (CompletionHandler handler) async {
+            await handler(false);
+          },
+        ),
+        SwipeAction(
+          icon: const Icon(Icons.playlist_add, color: Colors.white),
+          color: Colors.grey[700]!,
+          onTap: (CompletionHandler handler) async {
+            await handler(false);
+            if (context.mounted) {
+              await showAddToPlaylistDialog(
+                context,
+                url: song.url,
+                title: song.title,
+                artist: song.artist,
+                source: song.source,
+              );
+            }
+          },
+        ),
+        SwipeAction(
+          icon: AnimatedBuilder(
+            animation: DatabaseManager.instance,
+            builder: (context, _) {
+              return Icon(
+                DatabaseManager.instance.isFavoriteSync(song.url)
+                    ? Icons.favorite_rounded
+                    : Icons.favorite_border,
+                color: Colors.white,
+              );
+            },
+          ),
+          color: Colors.redAccent,
+          performsFirstActionWithFullSwipe: true,
+          onTap: (CompletionHandler handler) async {
+            await handler(false);
+            if (song.source == 'Local') {
+              await DatabaseManager.instance.toggleFavorite(song.url);
+            } else {
+              await DatabaseManager.instance.toggleFavoriteOnline(
+                song.url,
+                song.title,
+                song.artist,
+                song.source,
+              );
+            }
+          },
+        ),
+      ],
+      leadingActions: <SwipeAction>[
+        SwipeAction(
+          icon: const Icon(Icons.queue_music, color: Colors.white),
+          color: Colors.green,
+          onTap: (CompletionHandler handler) async {
+            await handler(false);
+            SongsManager().addToQueue(
+              QueueItem(
+                id: song.url,
+                title: song.title,
+                path: song.url,
+                artist: song.artist,
+              ),
+            );
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Added ${song.title} to queue')),
+              );
+            }
+          },
+        ),
+      ],
+      child: tileContent,
+    );
+  }
+}
+
+class _SongViewWrapper extends SongView {
+  const _SongViewWrapper({
+    super.key,
+    required super.song,
+    super.index,
+    super.allSongs,
+    super.onTap,
+    super.isGrid,
+    super.enableSwipe = true,
+    super.leading,
+    super.trailing,
+    super.height,
+  });
+}
+
+class _SongViewTile extends SongView {
+  const _SongViewTile({
+    super.key,
+    required super.song,
+    super.index,
+    super.allSongs,
+    super.onTap,
+    super.enableSwipe = true,
+    super.leading,
+    super.trailing,
+  }) : super(isGrid: false);
+}
+
+class _SongViewGrid extends SongView {
+  const _SongViewGrid({
+    super.key,
+    required super.song,
+    super.index,
+    super.allSongs,
+    super.onTap,
+    super.height,
+  }) : super(isGrid: true);
+}
+
+class Favourites extends StatefulWidget {
+  const Favourites({super.key});
+
+  @override
+  State<Favourites> createState() => _FavouritesState();
+}
+
+class _FavouritesState extends State<Favourites> {
+  late bool _showAppBar;
+
+  @override
+  void initState() {
+    _showAppBar = false;
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: AnimatedOpacity(
+          duration: const Duration(milliseconds: 150),
+          opacity: _showAppBar ? 1.0 : 0.0,
+          curve: Curves.easeIn,
+          child: const Text("Favourites"),
+        ),
+        actionsPadding: const EdgeInsets.all(0),
+        actions: [
+          MediaQuery.of(context).size.width < 700
+              ? IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.edit_rounded),
+                )
+              : const SizedBox(),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.more_vert_rounded),
+          ),
+        ],
+        shape: Border(
+          bottom: _showAppBar
+              ? const BorderSide(
+                  color: Color.fromRGBO(255, 245, 245, 0.3),
+                  width: 0.5,
+                )
+              : BorderSide.none,
+        ),
+        titleSpacing: 0,
+      ),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: LayoutBuilder(
+              builder: (context, constraint) {
+                if (constraint.maxWidth < 700) {
+                  return ColoredBox(
+                    color: Colors.transparent,
+                    child: SizedBox(
+                      height: 320,
+                      width: double.infinity,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 10),
+                          Container(
+                            width: 170,
+                            height: 170,
+                            decoration: BoxDecoration(
+                              color: setContainerContrastColor(context),
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(20),
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.music_note,
+                              color: setContainerColor(context),
+                              size: 60,
+                            ),
+                          ),
+                          const SizedBox(height: 15),
+                          VisibilityDetector(
+                            key: const Key("favourites"),
+                            child: const Text(
+                              "Favourites",
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            onVisibilityChanged: (visibilityInfo) {
+                              setState(() {
+                                _showAppBar =
+                                    visibilityInfo.visibleFraction * 100 <= 0
+                                    ? true
+                                    : false;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          ColoredBox(
+                            color: Colors.transparent,
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                child: ColoredBox(
+                                  color: Colors.transparent,
+                                  child: SizedBox(
+                                    width: 280,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        ElevatedButton.icon(
+                                          onPressed: () {},
+                                          label: Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                              0,
+                                              0,
+                                              0,
+                                              2,
+                                            ),
+                                            child: Text(
+                                              "Play",
+                                              style: TextStyle(
+                                                color: setContainerColor(
+                                                  context,
+                                                ),
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                          icon: SvgPicture.asset(
+                                            "assets/MusicIcons/play.svg",
+                                            width: 12,
+                                            height: 12,
+                                            colorFilter: ColorFilter.mode(
+                                              setContainerColor(context),
+                                              BlendMode.srcIn,
+                                            ),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            backgroundColor: Theme.of(
+                                              context,
+                                            ).textTheme.bodyLarge?.color,
+                                            fixedSize: const Size(120, 30),
+                                          ),
+                                        ),
+                                        ElevatedButton.icon(
+                                          onPressed: () {},
+                                          label: Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                              0,
+                                              0,
+                                              0,
+                                              2,
+                                            ),
+                                            child: Text(
+                                              "Shuffle",
+                                              style: TextStyle(
+                                                color: setContainerColor(
+                                                  context,
+                                                ),
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                          icon: SvgPicture.asset(
+                                            "assets/MusicIcons/shuffle.svg",
+                                            width: 12,
+                                            height: 12,
+                                            colorFilter: ColorFilter.mode(
+                                              setContainerColor(context),
+                                              BlendMode.srcIn,
+                                            ),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            backgroundColor:
+                                                setContainerContrastColor(
+                                                  context,
+                                                ),
+                                            fixedSize: const Size(120, 30),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                return ColoredBox(
+                  color: Colors.transparent,
+                  child: SizedBox(
+                    height: 350,
+                    width: double.infinity,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Container(
+                          width: 200,
+                          height: 200,
+                          margin: const EdgeInsets.all(50),
+                          decoration: BoxDecoration(
+                            color: setContainerContrastColor(context),
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(20),
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.music_note,
+                            color: setContainerColor(context),
+                            size: 80,
+                          ),
+                        ),
+                        Expanded(
+                          child: ColoredBox(
+                            color: Colors.transparent,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(0, 0, 0, 50),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  VisibilityDetector(
+                                    key: const Key("favourites"),
+                                    child: Row(
+                                      children: [
+                                        const Text(
+                                          "Favourites",
+                                          style: TextStyle(
+                                            fontSize: 36,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.fromLTRB(
+                                            6,
+                                            8,
+                                            0,
+                                            0,
+                                          ),
+                                          child: IconButton(
+                                            onPressed: () {},
+                                            icon: const Icon(
+                                              Icons.edit_rounded,
+                                              size: 24,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    onVisibilityChanged: (visibilityInfo) {
+                                      setState(() {
+                                        _showAppBar =
+                                            visibilityInfo.visibleFraction *
+                                                    100 <=
+                                                0
+                                            ? true
+                                            : false;
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(height: 20),
+                                  ColoredBox(
+                                    color: Colors.transparent,
+                                    child: SizedBox(
+                                      width: 260,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Transform.scale(
+                                            scale: 0.9,
+                                            child: ElevatedButton.icon(
+                                              onPressed: () {},
+                                              label: Padding(
+                                                padding:
+                                                    const EdgeInsets.fromLTRB(
+                                                      0,
+                                                      0,
+                                                      0,
+                                                      2,
+                                                    ),
+                                                child: Text(
+                                                  "Play",
+                                                  style: TextStyle(
+                                                    color: setContainerColor(
+                                                      context,
+                                                    ),
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                              icon: SvgPicture.asset(
+                                                "assets/MusicIcons/play.svg",
+                                                width: 12,
+                                                height: 12,
+                                                colorFilter: ColorFilter.mode(
+                                                  setContainerColor(context),
+                                                  BlendMode.srcIn,
+                                                ),
+                                              ),
+                                              style: ElevatedButton.styleFrom(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                backgroundColor: Theme.of(
+                                                  context,
+                                                ).textTheme.bodyLarge?.color,
+                                                fixedSize: const Size(120, 30),
+                                              ),
+                                            ),
+                                          ),
+                                          Transform.scale(
+                                            scale: 0.9,
+                                            child: ElevatedButton.icon(
+                                              onPressed: () {},
+                                              label: Padding(
+                                                padding:
+                                                    const EdgeInsets.fromLTRB(
+                                                      0,
+                                                      0,
+                                                      0,
+                                                      2,
+                                                    ),
+                                                child: Text(
+                                                  "Shuffle",
+                                                  style: TextStyle(
+                                                    color: setContainerColor(
+                                                      context,
+                                                    ),
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                              icon: SvgPicture.asset(
+                                                "assets/MusicIcons/shuffle.svg",
+                                                width: 12,
+                                                height: 12,
+                                                colorFilter: ColorFilter.mode(
+                                                  setContainerColor(context),
+                                                  BlendMode.srcIn,
+                                                ),
+                                              ),
+                                              style: ElevatedButton.styleFrom(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                backgroundColor:
+                                                    setContainerContrastColor(
+                                                      context,
+                                                    ),
+                                                fixedSize: const Size(120, 30),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate((context, index) {
+              return SongView.builder(
+                song: OnlineSong(
+                  title: "Song ${index + 1}",
+                  url: "favourite_song_${index + 1}",
+                  // artist: "Artist ${index + 1}",
+                  // source: "Favourites",
+                ),
+                index: index,
+              );
+            }, childCount: 100),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 120)),
+        ],
+      ),
+    );
+  }
 }

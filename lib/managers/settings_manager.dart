@@ -43,6 +43,8 @@ class SettingsManager {
       iconTheme: const IconThemeData(color: Colors.black87),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.black87),
         titleTextStyle: TextStyle(
@@ -86,6 +88,8 @@ class SettingsManager {
     iconTheme: const IconThemeData(color: Color.fromRGBO(255, 245, 245, 1)),
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
       elevation: 0,
       iconTheme: IconThemeData(color: Color.fromRGBO(255, 245, 245, 1)),
       titleTextStyle: TextStyle(

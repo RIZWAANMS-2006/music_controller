@@ -62,52 +62,24 @@ class _PlaylistsTabState extends State<PlaylistsTab> {
   */
 
   void _openFavorites() {
-    final parentScrollController = PrimaryScrollController.maybeOf(context);
-
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) {
-          Widget mediaUI = OnlineMediaUI(
-            title: "Favorites",
-            songsFuture: DatabaseManager.instance.getAllFavoriteSongs(),
-            emptyMessage: "No Favorite Yet...",
-          );
-
-          if (parentScrollController != null) {
-            return PrimaryScrollController(
-              controller: parentScrollController,
-              child: mediaUI,
-            );
-          }
-          return mediaUI;
-        },
+        builder: (context) => const Favourites(),
       ),
     );
   }
 
   void _openPlaylist(Map<String, dynamic> playlist) {
-    final parentScrollController = PrimaryScrollController.maybeOf(context);
-
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) {
-          Widget mediaUI = OnlineMediaUI(
-            title: playlist['name'],
-            songsFuture: DatabaseManager.instance
-                .getPlaylistSongs(playlist['id'] as int),
-            emptyMessage: "No songs in this playlist.",
-          );
-
-          if (parentScrollController != null) {
-            return PrimaryScrollController(
-              controller: parentScrollController,
-              child: mediaUI,
-            );
-          }
-          return mediaUI;
-        },
+        builder: (context) => OnlineMediaUI(
+          title: playlist['name'],
+          songsFuture: DatabaseManager.instance
+              .getPlaylistSongs(playlist['id'] as int),
+          emptyMessage: "No songs in this playlist.",
+        ),
       ),
     );
   }

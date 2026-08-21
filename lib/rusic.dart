@@ -149,7 +149,8 @@ class RusicState extends State<Rusic> {
     final primaryFocus = FocusManager.instance.primaryFocus;
     if (primaryFocus != null && primaryFocus.context != null) {
       final context = primaryFocus.context!;
-      final isEditable = context.widget is EditableText ||
+      final isEditable =
+          context.widget is EditableText ||
           context.findAncestorWidgetOfExactType<EditableText>() != null ||
           context.findAncestorWidgetOfExactType<TextField>() != null;
       if (isEditable) {
@@ -249,9 +250,18 @@ class WideScreenState extends State<WideScreen> {
       body: Row(
         children: [
           NavigationRail(
-            // extended: true,
             destinations: getNavigationRailDestinations(context),
             groupAlignment: 0,
+            leading: IconButton(
+              onPressed: toggleWideScreenPanels,
+              icon: SvgPicture.asset(
+                "assets/MusicIcons/swap.svg",
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).iconTheme.color!,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
             // backgroundColor: const Color.fromRGBO(26, 26, 26, 1),
             labelType: NavigationRailLabelType.selected,
             indicatorShape: ContinuousRectangleBorder(
@@ -289,6 +299,11 @@ class WideScreenState extends State<WideScreen> {
                       children: isSwapped
                           ? [
                               const Expanded(child: musicPane),
+                              const VerticalDivider(
+                                color: Color.fromRGBO(255, 245, 245, 0.3),
+                                thickness: 0.5,
+                                width: 0.5,
+                              ),
                               SizedBox(
                                 width: compactPaneWidth,
                                 height: double.infinity,
@@ -297,6 +312,11 @@ class WideScreenState extends State<WideScreen> {
                             ]
                           : [
                               Expanded(child: contentPane),
+                              const VerticalDivider(
+                                color: Color.fromRGBO(255, 245, 245, 0.3),
+                                thickness: 0.5,
+                                width: 0.5,
+                              ),
                               SizedBox(
                                 width: compactPaneWidth,
                                 height: double.infinity,
@@ -304,14 +324,20 @@ class WideScreenState extends State<WideScreen> {
                               ),
                             ],
                     ),
-                    Positioned(
-                      top: MediaQuery.of(context).padding.top + 4,
-                      right: compactPaneWidth - 52,
-                      child: IconButton(
-                        onPressed: toggleWideScreenPanels,
-                        icon: SvgPicture.asset("assets/MusicIcons/swap.svg",colorFilter: ColorFilter.mode(Theme.of(context).iconTheme.color!, BlendMode.srcIn),),
-                      ),
-                    ),
+                    // Positioned(
+                    //   top: MediaQuery.of(context).padding.top + 4,
+                    //   right: compactPaneWidth - 52,
+                    //   child: IconButton(
+                    //     onPressed: toggleWideScreenPanels,
+                    //     icon: SvgPicture.asset(
+                    //       "assets/MusicIcons/swap.svg",
+                    //       colorFilter: ColorFilter.mode(
+                    //         Theme.of(context).iconTheme.color!,
+                    //         BlendMode.srcIn,
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 );
               },
