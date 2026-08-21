@@ -2687,17 +2687,7 @@ class _FavouritesState extends State<Favourites> {
         ),
         actionsPadding: const EdgeInsets.all(0),
         actions: [
-          LayoutBuilder(
-            builder: (context, constraint) {
-              if (constraint.minWidth < 700) {
-                return IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.edit_rounded),
-                );
-              }
-              return const SizedBox();
-            },
-          ),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.edit_rounded)),
           IconButton(
             onPressed: () {},
             icon: const Icon(Icons.more_vert_rounded),
