@@ -2687,12 +2687,17 @@ class _FavouritesState extends State<Favourites> {
         ),
         actionsPadding: const EdgeInsets.all(0),
         actions: [
-          MediaQuery.of(context).size.width < 700
-              ? IconButton(
+          LayoutBuilder(
+            builder: (context, constraint) {
+              if (constraint.minWidth < 700) {
+                return IconButton(
                   onPressed: () {},
                   icon: const Icon(Icons.edit_rounded),
-                )
-              : const SizedBox(),
+                );
+              }
+              return const SizedBox();
+            },
+          ),
           IconButton(
             onPressed: () {},
             icon: const Icon(Icons.more_vert_rounded),
@@ -2767,92 +2772,100 @@ class _FavouritesState extends State<Favourites> {
                                 child: ColoredBox(
                                   color: Colors.transparent,
                                   child: SizedBox(
-                                    width: 280,
+                                    width: 260,
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        ElevatedButton.icon(
-                                          onPressed: () {},
-                                          label: Padding(
-                                            padding: const EdgeInsets.fromLTRB(
-                                              0,
-                                              0,
-                                              0,
-                                              2,
-                                            ),
-                                            child: Text(
-                                              "Play",
-                                              style: TextStyle(
-                                                color: setContainerColor(
-                                                  context,
+                                        Transform.scale(
+                                          scale: 0.9,
+                                          child: ElevatedButton.icon(
+                                            onPressed: () {},
+                                            label: Padding(
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    2,
+                                                  ),
+                                              child: Text(
+                                                "Play",
+                                                style: TextStyle(
+                                                  color: setContainerColor(
+                                                    context,
+                                                  ),
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
                                                 ),
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
                                               ),
                                             ),
-                                          ),
-                                          icon: SvgPicture.asset(
-                                            "assets/MusicIcons/play.svg",
-                                            width: 12,
-                                            height: 12,
-                                            colorFilter: ColorFilter.mode(
-                                              setContainerColor(context),
-                                              BlendMode.srcIn,
+                                            icon: SvgPicture.asset(
+                                              "assets/MusicIcons/play.svg",
+                                              width: 12,
+                                              height: 12,
+                                              colorFilter: ColorFilter.mode(
+                                                setContainerColor(context),
+                                                BlendMode.srcIn,
+                                              ),
                                             ),
-                                          ),
-                                          style: ElevatedButton.styleFrom(
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
+                                            style: ElevatedButton.styleFrom(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              backgroundColor: Theme.of(
+                                                context,
+                                              ).textTheme.bodyLarge?.color,
+                                              fixedSize: const Size(120, 30),
                                             ),
-                                            backgroundColor: Theme.of(
-                                              context,
-                                            ).textTheme.bodyLarge?.color,
-                                            fixedSize: const Size(120, 30),
                                           ),
                                         ),
-                                        ElevatedButton.icon(
-                                          onPressed: () {},
-                                          label: Padding(
-                                            padding: const EdgeInsets.fromLTRB(
-                                              0,
-                                              0,
-                                              0,
-                                              2,
-                                            ),
-                                            child: Text(
-                                              "Shuffle",
-                                              style: TextStyle(
-                                                color: setContainerColor(
-                                                  context,
+                                        Transform.scale(
+                                          scale: 0.9,
+                                          child: ElevatedButton.icon(
+                                            onPressed: () {},
+                                            label: Padding(
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    2,
+                                                  ),
+                                              child: Text(
+                                                "Shuffle",
+                                                style: TextStyle(
+                                                  color: setContainerColor(
+                                                    context,
+                                                  ),
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
                                                 ),
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
                                               ),
                                             ),
-                                          ),
-                                          icon: SvgPicture.asset(
-                                            "assets/MusicIcons/shuffle.svg",
-                                            width: 12,
-                                            height: 12,
-                                            colorFilter: ColorFilter.mode(
-                                              setContainerColor(context),
-                                              BlendMode.srcIn,
+                                            icon: SvgPicture.asset(
+                                              "assets/MusicIcons/shuffle.svg",
+                                              width: 12,
+                                              height: 12,
+                                              colorFilter: ColorFilter.mode(
+                                                setContainerColor(context),
+                                                BlendMode.srcIn,
+                                              ),
                                             ),
-                                          ),
-                                          style: ElevatedButton.styleFrom(
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
+                                            style: ElevatedButton.styleFrom(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              backgroundColor:
+                                                  setContainerContrastColor(
+                                                    context,
+                                                  ),
+                                              fixedSize: const Size(120, 30),
                                             ),
-                                            backgroundColor:
-                                                setContainerContrastColor(
-                                                  context,
-                                                ),
-                                            fixedSize: const Size(120, 30),
                                           ),
                                         ),
                                       ],
