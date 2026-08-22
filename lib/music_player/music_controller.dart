@@ -94,9 +94,11 @@ class _MusicQueueScreenState extends State<MusicQueueScreen> {
                           color: Theme.of(context).textTheme.bodyLarge?.color,
                         ),
                       ),
-                      const SizedBox(height: 12,),
+                      const SizedBox(height: 12),
                       Divider(
-                        color: setContainerContrastColor(context).withValues(alpha: 0.8),
+                        color: setContainerContrastColor(
+                          context,
+                        ).withValues(alpha: 0.8),
                         thickness: 3,
                         height: 1,
                       ),
@@ -349,11 +351,18 @@ class BottomMusicControllerState extends State<BottomMusicController> {
                                   color: setContainerColor(context),
                                   borderRadius: BorderRadius.circular(40),
                                 ),
-                                child: SvgPicture.asset(
-                                  "assets/MusicIcons/music_logo_black.svg",
-                                  color: Theme.of(
-                                    context,
-                                  ).textTheme.bodyLarge!.color!,
+                                child: Center(
+                                  child: SvgPicture.asset(
+                                    "assets/MusicIcons/music_u1.svg",
+                                    height: 18,
+                                    width: 18,
+                                    colorFilter: ColorFilter.mode(
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge!.color!,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -372,6 +381,7 @@ class BottomMusicControllerState extends State<BottomMusicController> {
                                   final style = TextStyle(
                                     color: setContainerColor(context),
                                     fontSize: 12,
+                                    fontWeight: FontWeight.w500,
                                   );
 
                                   final textPainter = TextPainter(
@@ -488,8 +498,8 @@ class BottomMusicControllerState extends State<BottomMusicController> {
             //         : setContainerColor(context),
             //   ),
             // ),
-            ),
-          );
+          ),
+        );
       },
     );
   }
@@ -731,11 +741,9 @@ class _FullSizeMusicControllerState extends State<FullSizeMusicController> {
                                             "assets/MusicIcons/previous_button.svg",
                                             color: currentSong == null
                                                 ? Colors.white24
-                                                : (SongsManager().isShuffle
-                                                      ? Colors.red
-                                                      : Theme.of(
-                                                          context,
-                                                        ).iconTheme.color),
+                                                : Theme.of(
+                                                    context,
+                                                  ).iconTheme.color,
                                             width: 20,
                                             height: 20,
                                           ),
@@ -806,11 +814,9 @@ class _FullSizeMusicControllerState extends State<FullSizeMusicController> {
                                             "assets/MusicIcons/next_button.svg",
                                             color: currentSong == null
                                                 ? Colors.white24
-                                                : (SongsManager().isShuffle
-                                                      ? Colors.red
-                                                      : Theme.of(
-                                                          context,
-                                                        ).iconTheme.color),
+                                                : Theme.of(
+                                                    context,
+                                                  ).iconTheme.color,
                                             width: 20,
                                             height: 20,
                                           ),
@@ -835,7 +841,8 @@ class _FullSizeMusicControllerState extends State<FullSizeMusicController> {
                                                   color: currentSong == null
                                                       ? Colors.white24
                                                       : (SongsManager()
-                                                                .isShuffle
+                                                                    .repeatMode !=
+                                                                RepeatMode.off
                                                             ? Colors.red
                                                             : Theme.of(context)
                                                                   .iconTheme
@@ -959,7 +966,10 @@ class _FullSizeMusicControllerState extends State<FullSizeMusicController> {
                                   ? IconButton(
                                       icon: SvgPicture.asset(
                                         "assets/MusicIcons/down_arrow.svg",
-                                        colorFilter: ColorFilter.mode(Theme.of(context).iconTheme.color!, BlendMode.srcIn),
+                                        colorFilter: ColorFilter.mode(
+                                          Theme.of(context).iconTheme.color!,
+                                          BlendMode.srcIn,
+                                        ),
                                       ),
                                       onPressed: () {
                                         Navigator.pop(context);
@@ -1057,9 +1067,18 @@ class _FullSizeMusicControllerState extends State<FullSizeMusicController> {
                                                               currentSong ==
                                                                   null
                                                               ? Colors.white24
-                                                              : (SongsManager()
-                                                                        .isShuffle
-                                                                    ? Colors.red
+                                                              : (DatabaseManager
+                                                                        .instance
+                                                                        .isFavoriteSync(
+                                                                          currentSong
+                                                                              .path,
+                                                                        )
+                                                                    ? Theme.of(
+                                                                            context,
+                                                                          )
+                                                                          .buttonTheme
+                                                                          .colorScheme!
+                                                                          .primary
                                                                     : Theme.of(
                                                                         context,
                                                                       ).iconTheme.color),
@@ -1111,15 +1130,15 @@ class _FullSizeMusicControllerState extends State<FullSizeMusicController> {
                                                         height:
                                                             constraints
                                                                 .maxWidth *
-                                                            0.35,
+                                                            0.32,
                                                         width:
                                                             constraints
                                                                 .maxWidth *
-                                                            0.35,
+                                                            0.32,
                                                         constraints:
                                                             const BoxConstraints(
-                                                              minHeight: 210,
-                                                              minWidth: 210,
+                                                              minHeight: 200,
+                                                              minWidth: 200,
                                                               maxHeight: 300,
                                                               maxWidth: 300,
                                                             ),
@@ -1357,6 +1376,25 @@ class _FullSizeMusicControllerState extends State<FullSizeMusicController> {
                                                   indicatorSize:
                                                       TabBarIndicatorSize.tab,
                                                   indicator: BoxDecoration(
+                                                    border: BoxBorder.all(
+                                                      color: currentSong == null
+                                                          ? const Color.fromRGBO(
+                                                              34,
+                                                              34,
+                                                              34,
+                                                              0.4,
+                                                            )
+                                                          : const Color.fromRGBO(
+                                                              34,
+                                                              34,
+                                                              34,
+                                                              1,
+                                                            ),
+                                                      width: 2,
+                                                      style: BorderStyle.solid,
+                                                      strokeAlign: BorderSide
+                                                          .strokeAlignCenter,
+                                                    ),
                                                     color: currentSong == null
                                                         ? const Color.fromRGBO(
                                                             34,
@@ -1374,6 +1412,31 @@ class _FullSizeMusicControllerState extends State<FullSizeMusicController> {
                                                         BorderRadius.circular(
                                                           25.0,
                                                         ),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color:
+                                                            currentSong == null
+                                                            ? const Color.fromRGBO(
+                                                                34,
+                                                                34,
+                                                                34,
+                                                                0.4,
+                                                              )
+                                                            : const Color.fromRGBO(
+                                                                34,
+                                                                34,
+                                                                34,
+                                                                1,
+                                                              ),
+                                                        offset: const Offset(
+                                                          0,
+                                                          0,
+                                                        ),
+                                                        blurRadius: 5,
+                                                        blurStyle:
+                                                            BlurStyle.outer,
+                                                      ),
+                                                    ],
                                                   ),
                                                   dividerColor:
                                                       Colors.transparent,

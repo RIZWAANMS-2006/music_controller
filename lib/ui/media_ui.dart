@@ -430,6 +430,9 @@ class _MediaUIState extends State<MediaUI> {
   }
 
   Widget _buildMobileLayout(List<File> displayFiles) {
+    final groupedFiles = _groupFilesByLetter(displayFiles);
+    final sortedLetters = groupedFiles.keys.toList()..sort();
+
     return Stack(
       children: [
         ScrollConfiguration(
@@ -457,60 +460,63 @@ class _MediaUIState extends State<MediaUI> {
                   ),
                 ),
               SliverList.builder(
-                itemCount: displayFiles.length,
-                itemBuilder: (context, index) {
-                  final file = displayFiles[index];
-                  final fileName = file.path.substring(
-                    file.path.lastIndexOf(Platform.pathSeparator) + 1,
-                  );
-                  final currentLetter = fileName.isNotEmpty
-                      ? fileName[0].toUpperCase()
-                      : '#';
-
-                  // Check if this is the first item of a new letter section
-                  bool showHeader = false;
-                  if (index == 0) {
-                    showHeader = true;
-                  } else {
-                    final prevFile = displayFiles[index - 1];
-                    final prevFileName = prevFile.path.substring(
-                      prevFile.path.lastIndexOf(Platform.pathSeparator) + 1,
-                    );
-                    final prevLetter = prevFileName.isNotEmpty
-                        ? prevFileName[0].toUpperCase()
-                        : '#';
-                    showHeader = currentLetter != prevLetter;
-                  }
+                itemCount: sortedLetters.length,
+                itemBuilder: (context, letterIndex) {
+                  final letter = sortedLetters[letterIndex];
+                  final filesInSection = groupedFiles[letter]!;
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (showHeader)
-                        Bounce(
-                          tilt: false,
-                          duration: const Duration(milliseconds: 100),
-                          scaleFactor: 0.9,
-                          onTap: () async {
-                            await Future.delayed(
-                              const Duration(milliseconds: 100),
-                            );
-                            if (mounted) {
-                              _showLetterPicker();
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                            child: Text(
-                              currentLetter,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
+                      Bounce(
+                        tilt: false,
+                        duration: const Duration(milliseconds: 100),
+                        scaleFactor: 0.9,
+                        onTap: () async {
+                          await Future.delayed(
+                            const Duration(milliseconds: 100),
+                          );
+                          if (mounted) {
+                            _showLetterPicker();
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                          child: Text(
+                            letter,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                           ),
                         ),
-                      _buildListItem(file, index),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          children: [
+                            for (int i = 0; i < filesInSection.length; i++) ...[
+                              if (i > 0)
+                                const Divider(height: 1, thickness: 0.2),
+                              _buildListItem(
+                                filesInSection[i],
+                                _sortedFiles.indexOf(filesInSection[i]),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
                     ],
                   );
                 },
@@ -1209,6 +1215,8 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
   }
 
   Widget _buildMobileLayout(List<OnlineSong> displaySongs) {
+    final groupedSongs = _groupSongsByLetter(displaySongs);
+    final sortedLetters = groupedSongs.keys.toList()..sort();
     final isNonOnline = widget.title != 'Online';
 
     return Scaffold(
@@ -1229,54 +1237,67 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
               slivers: [
                 if (isNonOnline) _buildSliverNavigationBar(),
                 SliverList.builder(
-                  itemCount: displaySongs.length,
-                  itemBuilder: (context, index) {
-                    final song = displaySongs[index];
-                    final currentLetter = song.title.isNotEmpty
-                        ? song.title[0].toUpperCase()
-                        : '#';
-
-                    // Check if this is the first item of a new letter section
-                    bool showHeader = false;
-                    if (index == 0) {
-                      showHeader = true;
-                    } else {
-                      final prevSong = displaySongs[index - 1];
-                      final prevLetter = prevSong.title.isNotEmpty
-                          ? prevSong.title[0].toUpperCase()
-                          : '#';
-                      showHeader = currentLetter != prevLetter;
-                    }
+                  itemCount: sortedLetters.length,
+                  itemBuilder: (context, letterIndex) {
+                    final letter = sortedLetters[letterIndex];
+                    final songsInSection = groupedSongs[letter]!;
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (showHeader)
-                          Bounce(
-                            tilt: false,
-                            duration: const Duration(milliseconds: 100),
-                            scaleFactor: 0.9,
-                            onTap: () async {
-                              await Future.delayed(
-                                const Duration(milliseconds: 100),
-                              );
-                              if (mounted) {
-                                _showLetterPicker();
-                              }
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                              child: Text(
-                                currentLetter,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
+                        Bounce(
+                          tilt: false,
+                          duration: const Duration(milliseconds: 100),
+                          scaleFactor: 0.9,
+                          onTap: () async {
+                            await Future.delayed(
+                              const Duration(milliseconds: 100),
+                            );
+                            if (mounted) {
+                              _showLetterPicker();
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                            child: Text(
+                              letter,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                             ),
                           ),
-                        _buildListItem(song, index),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            children: [
+                              for (
+                                int i = 0;
+                                i < songsInSection.length;
+                                i++
+                              ) ...[
+                                if (i > 0)
+                                  const Divider(height: 1, thickness: 0.2),
+                                _buildListItem(
+                                  songsInSection[i],
+                                  _sortedSongs.indexOf(songsInSection[i]),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
                       ],
                     );
                   },
@@ -2537,7 +2558,7 @@ class _SongViewState extends State<SongView> {
 
     return SwipeActionCell(
       key: ValueKey(song.url),
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.transparent,
       trailingActions: <SwipeAction>[
         SwipeAction(
           icon: const Icon(Icons.close, color: Colors.white),
@@ -2720,6 +2741,19 @@ class _FavouritesState extends State<Favourites> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: SvgPicture.asset(
+            "assets/MusicIcons/back.svg",
+            height: 20,
+            width: 22,
+            colorFilter: ColorFilter.mode(
+              setContainerContrastColor(context),
+              BlendMode.srcIn,
+            ),
+          ),
+        ),
         title: AnimatedOpacity(
           duration: const Duration(milliseconds: 150),
           opacity: _showAppBar ? 1.0 : 0.0,
@@ -2728,7 +2762,16 @@ class _FavouritesState extends State<Favourites> {
         ),
         actionsPadding: const EdgeInsets.all(0),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.edit_rounded)),
+          IconButton(
+            onPressed: () {},
+            icon: SvgPicture.asset(
+              "assets/MusicIcons/edit.svg",
+              colorFilter: ColorFilter.mode(
+                setContainerContrastColor(context),
+                BlendMode.srcIn,
+              ),
+            ),
+          ),
           IconButton(
             onPressed: () {},
             icon: const Icon(Icons.more_vert_rounded),
@@ -2770,13 +2813,13 @@ class _FavouritesState extends State<Favourites> {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Theme.of(
+                                  color: setContainerContrastColor(
                                     context,
-                                  ).buttonTheme.colorScheme!.primary,
-                                  blurRadius: 30,
+                                  ).withValues(alpha: 0.5),
+                                  blurRadius: 20,
                                   spreadRadius: 0,
                                   offset: const Offset(0, 0),
-                                  blurStyle: BlurStyle.outer,
+                                  blurStyle: BlurStyle.normal,
                                 ),
                               ],
                             ),
@@ -2794,7 +2837,7 @@ class _FavouritesState extends State<Favourites> {
                           ),
                           const SizedBox(height: 15),
                           VisibilityDetector(
-                            key: const Key("favourites"),
+                            key: const Key("favourites_mobile"),
                             child: const Text(
                               "Favourites",
                               style: TextStyle(
@@ -2803,6 +2846,7 @@ class _FavouritesState extends State<Favourites> {
                               ),
                             ),
                             onVisibilityChanged: (visibilityInfo) {
+                              if (!mounted) return;
                               setState(() {
                                 _showAppBar =
                                     visibilityInfo.visibleFraction * 100 <= 0
@@ -2974,7 +3018,7 @@ class _FavouritesState extends State<Favourites> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   VisibilityDetector(
-                                    key: const Key("favourites"),
+                                    key: const Key("favourites_desktop"),
                                     child: Row(
                                       children: [
                                         const Text(
@@ -3002,6 +3046,7 @@ class _FavouritesState extends State<Favourites> {
                                       ],
                                     ),
                                     onVisibilityChanged: (visibilityInfo) {
+                                      if (!mounted) return;
                                       setState(() {
                                         _showAppBar =
                                             visibilityInfo.visibleFraction *
@@ -3189,14 +3234,44 @@ class _FavouritesState extends State<Favourites> {
               ),
             )
           else
-            SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                return SongView.tile(
-                  song: _songs![index],
-                  index: index,
-                  allSongs: _songs,
-                );
-              }, childCount: _songs!.length),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              sliver: SliverList.separated(
+                itemCount: _songs!.length,
+                separatorBuilder: (context, index) {
+                  return Container(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.3),
+                    child: const Divider(height: 1, thickness: 0.2),
+                  );
+                },
+                itemBuilder: (context, index) {
+                  final isFirst = index == 0;
+                  final isLast = index == _songs!.length - 1;
+                  final borderRadius = BorderRadius.vertical(
+                    top: isFirst ? const Radius.circular(12) : Radius.zero,
+                    bottom: isLast ? const Radius.circular(12) : Radius.zero,
+                  );
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.3),
+                      borderRadius: borderRadius,
+                    ),
+                    clipBehavior: (isFirst || isLast)
+                        ? Clip.antiAlias
+                        : Clip.none,
+                    child: SongView.tile(
+                      song: _songs![index],
+                      index: index,
+                      allSongs: _songs,
+                    ),
+                  );
+                },
+              ),
             ),
           const SliverToBoxAdapter(child: SizedBox(height: 120)),
         ],
