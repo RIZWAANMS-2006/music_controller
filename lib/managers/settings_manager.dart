@@ -53,6 +53,15 @@ class SettingsManager {
           fontWeight: FontWeight.bold,
         ),
       ),
+      buttonTheme: const ButtonThemeData(
+        buttonColor: Color.fromRGBO(224, 63, 79, 1),
+        colorScheme: ColorScheme.light(primary: Color.fromRGBO(224, 63, 79, 1)),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color.fromRGBO(224, 63, 79, 1),
+        ),
+      ),
     );
   }
 
@@ -96,6 +105,15 @@ class SettingsManager {
         color: Color.fromRGBO(255, 245, 245, 1),
         fontSize: 20,
         fontWeight: FontWeight.bold,
+      ),
+    ),
+    buttonTheme: const ButtonThemeData(
+      buttonColor: Color.fromRGBO(224, 63, 79, 1),
+      colorScheme: ColorScheme.dark(primary: Color.fromRGBO(224, 63, 79, 1)),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color.fromRGBO(224, 63, 79, 1),
       ),
     ),
   );

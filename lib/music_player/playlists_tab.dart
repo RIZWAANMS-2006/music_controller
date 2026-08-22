@@ -146,7 +146,7 @@ class _PlaylistsTabState extends State<PlaylistsTab> {
             Icon(
               Icons.favorite_rounded,
               size: isDesktop ? 64 : 48,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).buttonTheme.colorScheme!.primary,
             ),
             SizedBox(height: isDesktop ? 16 : 12),
             Padding(

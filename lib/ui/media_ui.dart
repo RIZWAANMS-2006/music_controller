@@ -2498,13 +2498,17 @@ class _SongViewState extends State<SongView> {
                 color: setContainerContrastColor(context),
                 borderRadius: const BorderRadius.all(Radius.circular(5)),
               ),
-              child: SvgPicture.asset(
-                "assets/MusicIcons/music_logo_black.svg",
-                colorFilter: ColorFilter.mode(
-                  setContainerColor(context),
-                  BlendMode.srcIn,
-                ),
+              child: Icon(
+                Icons.music_note_rounded,
+                color: setContainerColor(context),
               ),
+              // SvgPicture.asset(
+              //   "assets/MusicIcons/music_logo_black.svg",
+              //   colorFilter: ColorFilter.mode(
+              //     setContainerColor(context),
+              //     BlendMode.srcIn,
+              //   ),
+              // ),
             ),
         title: Text(
           song.title,
@@ -2662,20 +2666,57 @@ class Favourites extends StatefulWidget {
 
 class _FavouritesState extends State<Favourites> {
   late bool _showAppBar;
+  List<OnlineSong>? _songs;
+  bool _isLoading = true;
 
   @override
   void initState() {
     _showAppBar = false;
     super.initState();
+    _loadFavorites();
+    DatabaseManager.instance.addListener(_loadFavorites);
   }
 
   @override
   void dispose() {
+    DatabaseManager.instance.removeListener(_loadFavorites);
     super.dispose();
+  }
+
+  Future<void> _loadFavorites() async {
+    final songs = await DatabaseManager.instance.getAllFavoriteSongs();
+    if (mounted) {
+      setState(() {
+        _songs = songs;
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _playAll({bool shuffle = false}) {
+    if (_songs == null || _songs!.isEmpty) return;
+    final items = _songs!
+        .map(
+          (s) => QueueItem(
+            id: s.url,
+            title: s.title,
+            path: s.url,
+            artist: s.artist,
+          ),
+        )
+        .toList();
+    if (shuffle) {
+      final shuffled = List<QueueItem>.from(items)..shuffle();
+      SongsManager().setQueue(queue: shuffled, startIndex: 0);
+    } else {
+      SongsManager().setQueue(queue: items, startIndex: 0);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.of(context).size.width >= 700;
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -2727,11 +2768,28 @@ class _FavouritesState extends State<Favourites> {
                               borderRadius: const BorderRadius.all(
                                 Radius.circular(20),
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Theme.of(
+                                    context,
+                                  ).buttonTheme.colorScheme!.primary,
+                                  blurRadius: 30,
+                                  spreadRadius: 0,
+                                  offset: const Offset(0, 0),
+                                  blurStyle: BlurStyle.outer,
+                                ),
+                              ],
                             ),
-                            child: Icon(
-                              Icons.music_note,
-                              color: setContainerColor(context),
-                              size: 60,
+                            child: Center(
+                              child: SvgPicture.asset(
+                                "assets/MusicIcons/music_logo_black.svg",
+                                height: 80,
+                                width: 80,
+                                colorFilter: ColorFilter.mode(
+                                  setContainerColor(context),
+                                  BlendMode.srcIn,
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 15),
@@ -2772,7 +2830,8 @@ class _FavouritesState extends State<Favourites> {
                                         Transform.scale(
                                           scale: 0.9,
                                           child: ElevatedButton.icon(
-                                            onPressed: () {},
+                                            onPressed: () =>
+                                                _playAll(shuffle: false),
                                             label: Padding(
                                               padding:
                                                   const EdgeInsets.fromLTRB(
@@ -2784,9 +2843,10 @@ class _FavouritesState extends State<Favourites> {
                                               child: Text(
                                                 "Play",
                                                 style: TextStyle(
-                                                  color: setContainerColor(
-                                                    context,
-                                                  ),
+                                                  color:
+                                                      setContainerContrastColor(
+                                                        context,
+                                                      ),
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.w600,
                                                 ),
@@ -2797,7 +2857,9 @@ class _FavouritesState extends State<Favourites> {
                                               width: 12,
                                               height: 12,
                                               colorFilter: ColorFilter.mode(
-                                                setContainerColor(context),
+                                                setContainerContrastColor(
+                                                  context,
+                                                ),
                                                 BlendMode.srcIn,
                                               ),
                                             ),
@@ -2806,9 +2868,10 @@ class _FavouritesState extends State<Favourites> {
                                                 borderRadius:
                                                     BorderRadius.circular(8),
                                               ),
-                                              backgroundColor: Theme.of(
-                                                context,
-                                              ).textTheme.bodyLarge?.color,
+                                              backgroundColor: Theme.of(context)
+                                                  .buttonTheme
+                                                  .colorScheme
+                                                  ?.primary,
                                               fixedSize: const Size(120, 30),
                                             ),
                                           ),
@@ -2816,7 +2879,8 @@ class _FavouritesState extends State<Favourites> {
                                         Transform.scale(
                                           scale: 0.9,
                                           child: ElevatedButton.icon(
-                                            onPressed: () {},
+                                            onPressed: () =>
+                                                _playAll(shuffle: true),
                                             label: Padding(
                                               padding:
                                                   const EdgeInsets.fromLTRB(
@@ -2888,10 +2952,16 @@ class _FavouritesState extends State<Favourites> {
                               Radius.circular(20),
                             ),
                           ),
-                          child: Icon(
-                            Icons.music_note,
-                            color: setContainerColor(context),
-                            size: 80,
+                          child: Center(
+                            child: SvgPicture.asset(
+                              "assets/MusicIcons/music_logo_black.svg",
+                              height: 100,
+                              width: 100,
+                              colorFilter: ColorFilter.mode(
+                                setContainerColor(context),
+                                BlendMode.srcIn,
+                              ),
+                            ),
                           ),
                         ),
                         Expanded(
@@ -2956,7 +3026,8 @@ class _FavouritesState extends State<Favourites> {
                                           Transform.scale(
                                             scale: 0.9,
                                             child: ElevatedButton.icon(
-                                              onPressed: () {},
+                                              onPressed: () =>
+                                                  _playAll(shuffle: false),
                                               label: Padding(
                                                 padding:
                                                     const EdgeInsets.fromLTRB(
@@ -2968,9 +3039,10 @@ class _FavouritesState extends State<Favourites> {
                                                 child: Text(
                                                   "Play",
                                                   style: TextStyle(
-                                                    color: setContainerColor(
-                                                      context,
-                                                    ),
+                                                    color:
+                                                        setContainerContrastColor(
+                                                          context,
+                                                        ),
                                                     fontSize: 12,
                                                     fontWeight: FontWeight.w600,
                                                   ),
@@ -2981,7 +3053,9 @@ class _FavouritesState extends State<Favourites> {
                                                 width: 12,
                                                 height: 12,
                                                 colorFilter: ColorFilter.mode(
-                                                  setContainerColor(context),
+                                                  setContainerContrastColor(
+                                                    context,
+                                                  ),
                                                   BlendMode.srcIn,
                                                 ),
                                               ),
@@ -2990,9 +3064,11 @@ class _FavouritesState extends State<Favourites> {
                                                   borderRadius:
                                                       BorderRadius.circular(8),
                                                 ),
-                                                backgroundColor: Theme.of(
-                                                  context,
-                                                ).textTheme.bodyLarge?.color,
+                                                backgroundColor:
+                                                    Theme.of(context)
+                                                        .buttonTheme
+                                                        .colorScheme
+                                                        ?.primary,
                                                 fixedSize: const Size(120, 30),
                                               ),
                                             ),
@@ -3000,7 +3076,8 @@ class _FavouritesState extends State<Favourites> {
                                           Transform.scale(
                                             scale: 0.9,
                                             child: ElevatedButton.icon(
-                                              onPressed: () {},
+                                              onPressed: () =>
+                                                  _playAll(shuffle: true),
                                               label: Padding(
                                                 padding:
                                                     const EdgeInsets.fromLTRB(
@@ -3058,19 +3135,69 @@ class _FavouritesState extends State<Favourites> {
               },
             ),
           ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              return SongView.builder(
-                song: OnlineSong(
-                  title: "Song ${index + 1}",
-                  url: "favourite_song_${index + 1}",
-                  // artist: "Artist ${index + 1}",
-                  // source: "Favourites",
+          if (_isLoading)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 40),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            )
+          else if (_songs == null || _songs!.isEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 48),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.favorite_border_rounded,
+                        size: 56,
+                        color: Colors.grey.withValues(alpha: 0.5),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "No favourite songs yet",
+                        style: TextStyle(
+                          color: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                index: index,
-              );
-            }, childCount: 100),
-          ),
+              ),
+            )
+          else if (isDesktop)
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: SliverGrid.extent(
+                maxCrossAxisExtent: 400,
+                childAspectRatio: 4,
+                mainAxisSpacing: 5,
+                crossAxisSpacing: 5,
+                children: List.generate(_songs!.length, (index) {
+                  return SongView.grid(
+                    song: _songs![index],
+                    index: index,
+                    allSongs: _songs,
+                  );
+                }),
+              ),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                return SongView.tile(
+                  song: _songs![index],
+                  index: index,
+                  allSongs: _songs,
+                );
+              }, childCount: _songs!.length),
+            ),
           const SliverToBoxAdapter(child: SizedBox(height: 120)),
         ],
       ),

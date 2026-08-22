@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:flutter/material.dart' hide RepeatMode;
+import 'package:flutter/material.dart';
 import 'package:text_scroll/text_scroll.dart';
 import 'package:lottie/lottie.dart';
 import 'package:just_audio/just_audio.dart';
@@ -10,7 +10,6 @@ import "package:Rusic/managers/ui_manager.dart";
 import 'package:Rusic/managers/songs_manager.dart';
 import 'package:Rusic/managers/video_manager.dart';
 import 'package:Rusic/managers/database_manager.dart';
-import 'package:toastification/toastification.dart';
 import 'package:video_player/video_player.dart';
 import 'package:Rusic/managers/settings_manager.dart';
 import 'package:Rusic/ui/media_ui.dart';
