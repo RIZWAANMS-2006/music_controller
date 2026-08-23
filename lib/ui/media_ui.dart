@@ -1,6 +1,9 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:Rusic/managers/settings_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:Rusic/managers/ui_manager.dart';
 import 'dart:io';
@@ -68,6 +71,7 @@ class _MediaUIState extends State<MediaUI> {
   List<File> _sortedFiles = [];
   final Set<String> _likedFiles = {};
   String _searchQuery = "";
+  bool _isGradientVisible = true;
 
   @override
   void initState() {
@@ -433,120 +437,152 @@ class _MediaUIState extends State<MediaUI> {
     final groupedFiles = _groupFilesByLetter(displayFiles);
     final sortedLetters = groupedFiles.keys.toList()..sort();
 
-    return Stack(
-      children: [
-        ScrollConfiguration(
-          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-          child: CustomScrollView(
-            controller:
-                PrimaryScrollController.maybeOf(context) ?? _scrollController,
-            slivers: [
-              if (widget.showNavigationBar) _buildNavigationBar(),
-              if (widget.showSearchBar)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-                    child: CupertinoSearchTextField(
-                      placeholder: 'Search...',
-                      style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyLarge?.color,
+    return NotificationListener<UserScrollNotification>(
+      onNotification: (notification) {
+        if (notification.direction == ScrollDirection.reverse) {
+          if (_isGradientVisible) {
+            setState(() {
+              _isGradientVisible = false;
+            });
+          }
+        } else if (notification.direction == ScrollDirection.forward) {
+          if (!_isGradientVisible) {
+            setState(() {
+              _isGradientVisible = true;
+            });
+          }
+        }
+        return false;
+      },
+      child: Stack(
+        children: [
+          ScrollConfiguration(
+            behavior: ScrollConfiguration.of(
+              context,
+            ).copyWith(scrollbars: false),
+            child: CustomScrollView(
+              controller:
+                  PrimaryScrollController.maybeOf(context) ?? _scrollController,
+              slivers: [
+                if (widget.showNavigationBar) _buildNavigationBar(),
+                if (widget.showSearchBar)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                      child: CupertinoSearchTextField(
+                        placeholder: 'Search...',
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value;
+                          });
+                        },
                       ),
-                      onChanged: (value) {
-                        setState(() {
-                          _searchQuery = value;
-                        });
-                      },
                     ),
                   ),
-                ),
-              SliverList.builder(
-                itemCount: sortedLetters.length,
-                itemBuilder: (context, letterIndex) {
-                  final letter = sortedLetters[letterIndex];
-                  final filesInSection = groupedFiles[letter]!;
+                SliverList.builder(
+                  itemCount: sortedLetters.length,
+                  itemBuilder: (context, letterIndex) {
+                    final letter = sortedLetters[letterIndex];
+                    final filesInSection = groupedFiles[letter]!;
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Bounce(
-                        tilt: false,
-                        duration: const Duration(milliseconds: 100),
-                        scaleFactor: 0.9,
-                        onTap: () async {
-                          await Future.delayed(
-                            const Duration(milliseconds: 100),
-                          );
-                          if (mounted) {
-                            _showLetterPicker();
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                          child: Text(
-                            letter,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary,
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Bounce(
+                          tilt: false,
+                          duration: const Duration(milliseconds: 100),
+                          scaleFactor: 0.9,
+                          onTap: () async {
+                            await Future.delayed(
+                              const Duration(milliseconds: 100),
+                            );
+                            if (mounted) {
+                              _showLetterPicker();
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                            child: Text(
+                              letter,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 0,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest
-                              .withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          children: [
-                            for (int i = 0; i < filesInSection.length; i++) ...[
-                              if (i > 0)
-                                const Divider(height: 1, thickness: 0.2),
-                              _buildListItem(
-                                filesInSection[i],
-                                _sortedFiles.indexOf(filesInSection[i]),
-                              ),
+                        Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            children: [
+                              for (
+                                int i = 0;
+                                i < filesInSection.length;
+                                i++
+                              ) ...[
+                                if (i > 0)
+                                  const Divider(height: 1, thickness: 0.2),
+                                _buildListItem(
+                                  filesInSection[i],
+                                  _sortedFiles.indexOf(filesInSection[i]),
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: 150)),
-            ],
-          ),
-        ),
-        // Bottom gradient fade
-        Positioned(
-          bottom: 0,
-          child: IgnorePointer(
-            child: Container(
-              height: 100,
-              width: MediaQuery.of(context).size.width,
-              // decoration: BoxDecoration(
-              //   gradient: LinearGradient(
-              //     colors: [
-              //       Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
-              //       Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
-              //       Theme.of(context).scaffoldBackgroundColor,
-              //     ],
-              //     begin: Alignment.topCenter,
-              //     end: Alignment.bottomCenter,
-              //   ),
-              // ),
+                      ],
+                    );
+                  },
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 150)),
+              ],
             ),
           ),
-        ),
-      ],
+          // Bottom gradient fade
+          Positioned(
+            bottom: 0,
+            child: IgnorePointer(
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                opacity: _isGradientVisible ? 1.0 : 0.0,
+                child: Container(
+                  height: 80,
+                  width: MediaQuery.of(context).size.width,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Theme.of(
+                          context,
+                        ).scaffoldBackgroundColor.withValues(alpha: 0),
+                        Theme.of(
+                          context,
+                        ).scaffoldBackgroundColor.withValues(alpha: 0.8),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -751,6 +787,7 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
   List<OnlineSong> _sortedSongs = [];
   String? _selectedSource;
   String _searchQuery = "";
+  bool _isGradientVisible = true;
 
   @override
   void dispose() {
@@ -1222,116 +1259,140 @@ class _OnlineMediaUIState extends State<OnlineMediaUI> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: isNonOnline ? null : _buildAppBar(songs: displaySongs),
-      body: Stack(
-        children: [
-          ScrollConfiguration(
-            behavior: ScrollConfiguration.of(
-              context,
-            ).copyWith(scrollbars: false),
-            child: CustomScrollView(
-              controller:
-                  PrimaryScrollController.maybeOf(context) ?? _scrollController,
-              physics: const BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics(),
-              ),
-              slivers: [
-                if (isNonOnline) _buildSliverNavigationBar(),
-                SliverList.builder(
-                  itemCount: sortedLetters.length,
-                  itemBuilder: (context, letterIndex) {
-                    final letter = sortedLetters[letterIndex];
-                    final songsInSection = groupedSongs[letter]!;
+      body: NotificationListener<UserScrollNotification>(
+        onNotification: (notification) {
+          if (notification.direction == ScrollDirection.reverse) {
+            if (_isGradientVisible) {
+              setState(() {
+                _isGradientVisible = false;
+              });
+            }
+          } else if (notification.direction == ScrollDirection.forward) {
+            if (!_isGradientVisible) {
+              setState(() {
+                _isGradientVisible = true;
+              });
+            }
+          }
+          return false;
+        },
+        child: Stack(
+          children: [
+            ScrollConfiguration(
+              behavior: ScrollConfiguration.of(
+                context,
+              ).copyWith(scrollbars: false),
+              child: CustomScrollView(
+                controller:
+                    PrimaryScrollController.maybeOf(context) ??
+                    _scrollController,
+                physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics(),
+                ),
+                slivers: [
+                  if (isNonOnline) _buildSliverNavigationBar(),
+                  SliverList.builder(
+                    itemCount: sortedLetters.length,
+                    itemBuilder: (context, letterIndex) {
+                      final letter = sortedLetters[letterIndex];
+                      final songsInSection = groupedSongs[letter]!;
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Bounce(
-                          tilt: false,
-                          duration: const Duration(milliseconds: 100),
-                          scaleFactor: 0.9,
-                          onTap: () async {
-                            await Future.delayed(
-                              const Duration(milliseconds: 100),
-                            );
-                            if (mounted) {
-                              _showLetterPicker();
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                            child: Text(
-                              letter,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary,
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Bounce(
+                            tilt: false,
+                            duration: const Duration(milliseconds: 100),
+                            scaleFactor: 0.9,
+                            onTap: () async {
+                              await Future.delayed(
+                                const Duration(milliseconds: 100),
+                              );
+                              if (mounted) {
+                                _showLetterPicker();
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                              child: Text(
+                                letter,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 0,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest
-                                .withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            children: [
-                              for (
-                                int i = 0;
-                                i < songsInSection.length;
-                                i++
-                              ) ...[
-                                if (i > 0)
-                                  const Divider(height: 1, thickness: 0.2),
-                                _buildListItem(
-                                  songsInSection[i],
-                                  _sortedSongs.indexOf(songsInSection[i]),
-                                ),
+                          Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 0,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest
+                                  .withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              children: [
+                                for (
+                                  int i = 0;
+                                  i < songsInSection.length;
+                                  i++
+                                ) ...[
+                                  if (i > 0)
+                                    const Divider(height: 1, thickness: 0.2),
+                                  _buildListItem(
+                                    songsInSection[i],
+                                    _sortedSongs.indexOf(songsInSection[i]),
+                                  ),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 170)),
-              ],
+                        ],
+                      );
+                    },
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 170)),
+                ],
+              ),
             ),
-          ),
-          // Bottom gradient fade
-          Positioned(
-            bottom: 0,
-            child: IgnorePointer(
-              child: Container(
-                height: 100,
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(
-                        context,
-                      ).scaffoldBackgroundColor.withValues(alpha: 0.0),
-                      Theme.of(
-                        context,
-                      ).scaffoldBackgroundColor.withValues(alpha: 0.8),
-                      Theme.of(context).scaffoldBackgroundColor,
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+            // Bottom gradient fade
+            Positioned(
+              bottom: 0,
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  opacity: _isGradientVisible ? 1.0 : 0.0,
+                  child: Container(
+                    height: 100,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(
+                            context,
+                          ).scaffoldBackgroundColor.withValues(alpha: 0.0),
+                          Theme.of(
+                            context,
+                          ).scaffoldBackgroundColor.withValues(alpha: 0.8),
+                          Theme.of(context).scaffoldBackgroundColor,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -2689,6 +2750,7 @@ class _FavouritesState extends State<Favourites> {
   late bool _showAppBar;
   List<OnlineSong>? _songs;
   bool _isLoading = true;
+  bool _isGradientVisible = true;
 
   @override
   void initState() {
@@ -2773,7 +2835,421 @@ class _FavouritesState extends State<Favourites> {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              String selectedSort = "A-Z";
+              showModalBottomSheet(
+                context: context,
+                useRootNavigator: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) {
+                  return StatefulBuilder(
+                    builder: (context, setModalState) {
+                      return SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.65,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(20),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.25),
+                                blurRadius: 16,
+                                spreadRadius: 1,
+                                offset: const Offset(0, -6),
+                              ),
+                            ],
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: Scaffold(
+                            backgroundColor: Colors.transparent,
+                            body: SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Top drag handle
+                                  Center(
+                                    child: Container(
+                                      margin: const EdgeInsets.only(
+                                        top: 10,
+                                        bottom: 5,
+                                      ),
+                                      width: 40,
+                                      height: 5,
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(
+                                          context,
+                                        ).dividerColor.withValues(alpha: 0.5),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                  ),
+                                  // Header row
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0,
+                                      vertical: 10.0,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Favourite",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(
+                                              context,
+                                            ).textTheme.bodyLarge?.color,
+                                            fontFamily: SettingsManager
+                                                .fontFamily
+                                                .value,
+                                          ),
+                                        ),
+                                        Text(
+                                          "${_songs?.length ?? 0} Songs",
+                                          style: TextStyle(
+                                            color: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.color
+                                                ?.withValues(alpha: 0.7),
+                                            fontSize: 13,
+                                            fontFamily: SettingsManager
+                                                .fontFamily
+                                                .value,
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 12),
+                                        Divider(
+                                          color: setContainerContrastColor(
+                                            context,
+                                          ).withValues(alpha: 0.8),
+                                          thickness: 1,
+                                          height: 1,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  ListTile(
+                                    leading: const Icon(
+                                      Icons.shuffle,
+                                      size: 20,
+                                    ),
+                                    title: const Text(
+                                      "Shuffle",
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      _playAll(shuffle: true);
+                                    },
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const ListTile(
+                                        leading: Icon(Icons.sort, size: 20),
+                                        title: Text(
+                                          "Sort",
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 4,
+                                        ),
+                                        child: SizedBox(
+                                          width: double.infinity,
+                                          child: Transform.scale(
+                                            scale: 0.88,
+                                            child: CupertinoSlidingSegmentedControl<String>(
+                                              groupValue: selectedSort,
+                                              thumbColor: Theme.of(context)
+                                                  .buttonTheme
+                                                  .colorScheme!
+                                                  .primary,
+                                              padding: const EdgeInsets.all(3),
+                                              onValueChanged: (value) {
+                                                if (value != null) {
+                                                  setModalState(() {
+                                                    selectedSort = value;
+                                                  });
+                                                }
+                                              },
+                                              children: {
+                                                "A-Z": Padding(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 8,
+                                                      ),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Icon(
+                                                        Icons
+                                                            .sort_by_alpha_rounded,
+                                                        size: 15,
+                                                        color:
+                                                            selectedSort ==
+                                                                "A-Z"
+                                                            ? Colors.white
+                                                            : Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyMedium
+                                                                  ?.color
+                                                                  ?.withValues(
+                                                                    alpha: 0.7,
+                                                                  ),
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        "A-Z",
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              selectedSort ==
+                                                                  "A-Z"
+                                                              ? FontWeight.w600
+                                                              : FontWeight
+                                                                    .normal,
+                                                          color:
+                                                              selectedSort ==
+                                                                  "A-Z"
+                                                              ? Colors.white
+                                                              : Theme.of(
+                                                                      context,
+                                                                    )
+                                                                    .textTheme
+                                                                    .bodyMedium
+                                                                    ?.color
+                                                                    ?.withValues(
+                                                                      alpha:
+                                                                          0.7,
+                                                                    ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                "Z-A": Padding(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 8,
+                                                      ),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Icon(
+                                                        Icons.swap_vert_rounded,
+                                                        size: 15,
+                                                        color:
+                                                            selectedSort ==
+                                                                "Z-A"
+                                                            ? Colors.white
+                                                            : Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyMedium
+                                                                  ?.color
+                                                                  ?.withValues(
+                                                                    alpha: 0.7,
+                                                                  ),
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        "Z-A",
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              selectedSort ==
+                                                                  "Z-A"
+                                                              ? FontWeight.w600
+                                                              : FontWeight
+                                                                    .normal,
+                                                          color:
+                                                              selectedSort ==
+                                                                  "Z-A"
+                                                              ? Colors.white
+                                                              : Theme.of(
+                                                                      context,
+                                                                    )
+                                                                    .textTheme
+                                                                    .bodyMedium
+                                                                    ?.color
+                                                                    ?.withValues(
+                                                                      alpha:
+                                                                          0.7,
+                                                                    ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                "New": Padding(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 8,
+                                                      ),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Icon(
+                                                        Icons.schedule_rounded,
+                                                        size: 15,
+                                                        color:
+                                                            selectedSort ==
+                                                                "New"
+                                                            ? Colors.white
+                                                            : Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyMedium
+                                                                  ?.color
+                                                                  ?.withValues(
+                                                                    alpha: 0.7,
+                                                                  ),
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        "New",
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              selectedSort ==
+                                                                  "New"
+                                                              ? FontWeight.w600
+                                                              : FontWeight
+                                                                    .normal,
+                                                          color:
+                                                              selectedSort ==
+                                                                  "New"
+                                                              ? Colors.white
+                                                              : Theme.of(
+                                                                      context,
+                                                                    )
+                                                                    .textTheme
+                                                                    .bodyMedium
+                                                                    ?.color
+                                                                    ?.withValues(
+                                                                      alpha:
+                                                                          0.7,
+                                                                    ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                "Old": Padding(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 8,
+                                                      ),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Icon(
+                                                        Icons.history_rounded,
+                                                        size: 15,
+                                                        color:
+                                                            selectedSort ==
+                                                                "Old"
+                                                            ? Colors.white
+                                                            : Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyMedium
+                                                                  ?.color
+                                                                  ?.withValues(
+                                                                    alpha: 0.7,
+                                                                  ),
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        "Old",
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              selectedSort ==
+                                                                  "Old"
+                                                              ? FontWeight.w600
+                                                              : FontWeight
+                                                                    .normal,
+                                                          color:
+                                                              selectedSort ==
+                                                                  "Old"
+                                                              ? Colors.white
+                                                              : Theme.of(
+                                                                      context,
+                                                                    )
+                                                                    .textTheme
+                                                                    .bodyMedium
+                                                                    ?.color
+                                                                    ?.withValues(
+                                                                      alpha:
+                                                                          0.7,
+                                                                    ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  ListTile(
+                                    leading: const Icon(Icons.search, size: 20),
+                                    title: const Text(
+                                      "Search",
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                    onTap: () {},
+                                  ),
+                                  ListTile(
+                                    leading: const Icon(Icons.delete, size: 20),
+                                    title: const Text(
+                                      "Delete Playlist",
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                    onTap: () {},
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            },
             icon: const Icon(Icons.more_vert_rounded),
           ),
         ],
@@ -2787,494 +3263,603 @@ class _FavouritesState extends State<Favourites> {
         ),
         titleSpacing: 0,
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: LayoutBuilder(
-              builder: (context, constraint) {
-                if (constraint.maxWidth < 700) {
-                  return ColoredBox(
-                    color: Colors.transparent,
-                    child: SizedBox(
-                      height: 320,
-                      width: double.infinity,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const SizedBox(height: 10),
-                          Container(
-                            width: 170,
-                            height: 170,
-                            decoration: BoxDecoration(
-                              color: setContainerContrastColor(context),
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(20),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: setContainerContrastColor(
-                                    context,
-                                  ).withValues(alpha: 0.5),
-                                  blurRadius: 20,
-                                  spreadRadius: 0,
-                                  offset: const Offset(0, 0),
-                                  blurStyle: BlurStyle.normal,
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: SvgPicture.asset(
-                                "assets/MusicIcons/music_logo_black.svg",
-                                height: 80,
-                                width: 80,
-                                colorFilter: ColorFilter.mode(
-                                  setContainerColor(context),
-                                  BlendMode.srcIn,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          VisibilityDetector(
-                            key: const Key("favourites_mobile"),
-                            child: const Text(
-                              "Favourites",
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            onVisibilityChanged: (visibilityInfo) {
-                              if (!mounted) return;
-                              setState(() {
-                                _showAppBar =
-                                    visibilityInfo.visibleFraction * 100 <= 0
-                                    ? true
-                                    : false;
-                              });
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                          ColoredBox(
-                            color: Colors.transparent,
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                                child: ColoredBox(
-                                  color: Colors.transparent,
-                                  child: SizedBox(
-                                    width: 260,
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Transform.scale(
-                                          scale: 0.9,
-                                          child: ElevatedButton.icon(
-                                            onPressed: () =>
-                                                _playAll(shuffle: false),
-                                            label: Padding(
-                                              padding:
-                                                  const EdgeInsets.fromLTRB(
-                                                    0,
-                                                    0,
-                                                    0,
-                                                    2,
-                                                  ),
-                                              child: Text(
-                                                "Play",
-                                                style: TextStyle(
-                                                  color:
-                                                      setContainerContrastColor(
-                                                        context,
-                                                      ),
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ),
-                                            icon: SvgPicture.asset(
-                                              "assets/MusicIcons/play.svg",
-                                              width: 12,
-                                              height: 12,
-                                              colorFilter: ColorFilter.mode(
-                                                setContainerContrastColor(
-                                                  context,
-                                                ),
-                                                BlendMode.srcIn,
-                                              ),
-                                            ),
-                                            style: ElevatedButton.styleFrom(
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              backgroundColor: Theme.of(context)
-                                                  .buttonTheme
-                                                  .colorScheme
-                                                  ?.primary,
-                                              fixedSize: const Size(120, 30),
-                                            ),
-                                          ),
-                                        ),
-                                        Transform.scale(
-                                          scale: 0.9,
-                                          child: ElevatedButton.icon(
-                                            onPressed: () =>
-                                                _playAll(shuffle: true),
-                                            label: Padding(
-                                              padding:
-                                                  const EdgeInsets.fromLTRB(
-                                                    0,
-                                                    0,
-                                                    0,
-                                                    2,
-                                                  ),
-                                              child: Text(
-                                                "Shuffle",
-                                                style: TextStyle(
-                                                  color: setContainerColor(
-                                                    context,
-                                                  ),
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ),
-                                            icon: SvgPicture.asset(
-                                              "assets/MusicIcons/shuffle.svg",
-                                              width: 12,
-                                              height: 12,
-                                              colorFilter: ColorFilter.mode(
-                                                setContainerColor(context),
-                                                BlendMode.srcIn,
-                                              ),
-                                            ),
-                                            style: ElevatedButton.styleFrom(
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              backgroundColor:
-                                                  setContainerContrastColor(
-                                                    context,
-                                                  ),
-                                              fixedSize: const Size(120, 30),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+      body: NotificationListener<UserScrollNotification>(
+        onNotification: (notification) {
+          if (notification.direction == ScrollDirection.reverse) {
+            if (_isGradientVisible) {
+              setState(() {
+                _isGradientVisible = false;
+              });
+            }
+          } else if (notification.direction == ScrollDirection.forward) {
+            if (!_isGradientVisible) {
+              setState(() {
+                _isGradientVisible = true;
+              });
+            }
+          }
+          return false;
+        },
+        child: Stack(
+          children: [
+            CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: LayoutBuilder(
+                    builder: (context, constraint) {
+                      if (constraint.maxWidth < 700) {
+                        return ColoredBox(
+                          color: Colors.transparent,
+                          child: SizedBox(
+                            height: 320,
+                            width: double.infinity,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const SizedBox(height: 10),
+                                Container(
+                                  width: 170,
+                                  height: 170,
+                                  decoration: BoxDecoration(
+                                    color: setContainerContrastColor(context),
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(20),
                                     ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: setContainerContrastColor(
+                                          context,
+                                        ).withValues(alpha: 0.5),
+                                        blurRadius: 20,
+                                        spreadRadius: 0,
+                                        offset: const Offset(0, 0),
+                                        blurStyle: BlurStyle.normal,
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-                return ColoredBox(
-                  color: Colors.transparent,
-                  child: SizedBox(
-                    height: 350,
-                    width: double.infinity,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Container(
-                          width: 200,
-                          height: 200,
-                          margin: const EdgeInsets.all(50),
-                          decoration: BoxDecoration(
-                            color: setContainerContrastColor(context),
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(20),
-                            ),
-                          ),
-                          child: Center(
-                            child: SvgPicture.asset(
-                              "assets/MusicIcons/music_logo_black.svg",
-                              height: 100,
-                              width: 100,
-                              colorFilter: ColorFilter.mode(
-                                setContainerColor(context),
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: ColoredBox(
-                            color: Colors.transparent,
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 0, 0, 50),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  VisibilityDetector(
-                                    key: const Key("favourites_desktop"),
-                                    child: Row(
-                                      children: [
-                                        const Text(
-                                          "Favourites",
-                                          style: TextStyle(
-                                            fontSize: 36,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                            6,
-                                            8,
-                                            0,
-                                            0,
-                                          ),
-                                          child: IconButton(
-                                            onPressed: () {},
-                                            icon: const Icon(
-                                              Icons.edit_rounded,
-                                              size: 24,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    onVisibilityChanged: (visibilityInfo) {
-                                      if (!mounted) return;
-                                      setState(() {
-                                        _showAppBar =
-                                            visibilityInfo.visibleFraction *
-                                                    100 <=
-                                                0
-                                            ? true
-                                            : false;
-                                      });
-                                    },
-                                  ),
-                                  const SizedBox(height: 20),
-                                  ColoredBox(
-                                    color: Colors.transparent,
-                                    child: SizedBox(
-                                      width: 260,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Transform.scale(
-                                            scale: 0.9,
-                                            child: ElevatedButton.icon(
-                                              onPressed: () =>
-                                                  _playAll(shuffle: false),
-                                              label: Padding(
-                                                padding:
-                                                    const EdgeInsets.fromLTRB(
-                                                      0,
-                                                      0,
-                                                      0,
-                                                      2,
-                                                    ),
-                                                child: Text(
-                                                  "Play",
-                                                  style: TextStyle(
-                                                    color:
-                                                        setContainerContrastColor(
-                                                          context,
-                                                        ),
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ),
-                                              icon: SvgPicture.asset(
-                                                "assets/MusicIcons/play.svg",
-                                                width: 12,
-                                                height: 12,
-                                                colorFilter: ColorFilter.mode(
-                                                  setContainerContrastColor(
-                                                    context,
-                                                  ),
-                                                  BlendMode.srcIn,
-                                                ),
-                                              ),
-                                              style: ElevatedButton.styleFrom(
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
-                                                backgroundColor:
-                                                    Theme.of(context)
-                                                        .buttonTheme
-                                                        .colorScheme
-                                                        ?.primary,
-                                                fixedSize: const Size(120, 30),
-                                              ),
-                                            ),
-                                          ),
-                                          Transform.scale(
-                                            scale: 0.9,
-                                            child: ElevatedButton.icon(
-                                              onPressed: () =>
-                                                  _playAll(shuffle: true),
-                                              label: Padding(
-                                                padding:
-                                                    const EdgeInsets.fromLTRB(
-                                                      0,
-                                                      0,
-                                                      0,
-                                                      2,
-                                                    ),
-                                                child: Text(
-                                                  "Shuffle",
-                                                  style: TextStyle(
-                                                    color: setContainerColor(
-                                                      context,
-                                                    ),
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ),
-                                              icon: SvgPicture.asset(
-                                                "assets/MusicIcons/shuffle.svg",
-                                                width: 12,
-                                                height: 12,
-                                                colorFilter: ColorFilter.mode(
-                                                  setContainerColor(context),
-                                                  BlendMode.srcIn,
-                                                ),
-                                              ),
-                                              style: ElevatedButton.styleFrom(
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
-                                                backgroundColor:
-                                                    setContainerContrastColor(
-                                                      context,
-                                                    ),
-                                                fixedSize: const Size(120, 30),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                  child: Center(
+                                    child: SvgPicture.asset(
+                                      "assets/MusicIcons/music_logo_black.svg",
+                                      height: 80,
+                                      width: 80,
+                                      colorFilter: ColorFilter.mode(
+                                        setContainerColor(context),
+                                        BlendMode.srcIn,
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: 15),
+                                VisibilityDetector(
+                                  key: const Key("favourites_mobile"),
+                                  child: const Text(
+                                    "Favourites",
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  onVisibilityChanged: (visibilityInfo) {
+                                    if (!mounted) return;
+                                    setState(() {
+                                      _showAppBar =
+                                          visibilityInfo.visibleFraction *
+                                                  100 <=
+                                              0
+                                          ? true
+                                          : false;
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: 20),
+                                ColoredBox(
+                                  color: Colors.transparent,
+                                  child: Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                      ),
+                                      child: ColoredBox(
+                                        color: Colors.transparent,
+                                        child: SizedBox(
+                                          width: 260,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              Transform.scale(
+                                                scale: 0.9,
+                                                child: ElevatedButton.icon(
+                                                  onPressed: () =>
+                                                      _playAll(shuffle: false),
+                                                  label: Padding(
+                                                    padding:
+                                                        const EdgeInsets.fromLTRB(
+                                                          0,
+                                                          0,
+                                                          0,
+                                                          2,
+                                                        ),
+                                                    child: Text(
+                                                      "Play",
+                                                      style: TextStyle(
+                                                        color:
+                                                            setContainerContrastColor(
+                                                              context,
+                                                            ),
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  icon: SvgPicture.asset(
+                                                    "assets/MusicIcons/play.svg",
+                                                    width: 12,
+                                                    height: 12,
+                                                    colorFilter: ColorFilter.mode(
+                                                      setContainerContrastColor(
+                                                        context,
+                                                      ),
+                                                      BlendMode.srcIn,
+                                                    ),
+                                                  ),
+                                                  style: ElevatedButton.styleFrom(
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                    backgroundColor:
+                                                        Theme.of(context)
+                                                            .buttonTheme
+                                                            .colorScheme
+                                                            ?.primary,
+                                                    fixedSize: const Size(
+                                                      120,
+                                                      30,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              Transform.scale(
+                                                scale: 0.9,
+                                                child: ElevatedButton.icon(
+                                                  onPressed: () =>
+                                                      _playAll(shuffle: true),
+                                                  label: Padding(
+                                                    padding:
+                                                        const EdgeInsets.fromLTRB(
+                                                          0,
+                                                          0,
+                                                          0,
+                                                          2,
+                                                        ),
+                                                    child: Text(
+                                                      "Shuffle",
+                                                      style: TextStyle(
+                                                        color:
+                                                            setContainerColor(
+                                                              context,
+                                                            ),
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  icon: SvgPicture.asset(
+                                                    "assets/MusicIcons/shuffle.svg",
+                                                    width: 12,
+                                                    height: 12,
+                                                    colorFilter:
+                                                        ColorFilter.mode(
+                                                          setContainerColor(
+                                                            context,
+                                                          ),
+                                                          BlendMode.srcIn,
+                                                        ),
+                                                  ),
+                                                  style: ElevatedButton.styleFrom(
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                    backgroundColor:
+                                                        setContainerContrastColor(
+                                                          context,
+                                                        ),
+                                                    fixedSize: const Size(
+                                                      120,
+                                                      30,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
+                        );
+                      }
+                      return ColoredBox(
+                        color: Colors.transparent,
+                        child: SizedBox(
+                          height: 350,
+                          width: double.infinity,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Container(
+                                width: 200,
+                                height: 200,
+                                margin: const EdgeInsets.all(50),
+                                decoration: BoxDecoration(
+                                  color: setContainerContrastColor(context),
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(20),
+                                  ),
+                                ),
+                                child: Center(
+                                  child: SvgPicture.asset(
+                                    "assets/MusicIcons/music_logo_black.svg",
+                                    height: 100,
+                                    width: 100,
+                                    colorFilter: ColorFilter.mode(
+                                      setContainerColor(context),
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: ColoredBox(
+                                  color: Colors.transparent,
+                                  child: Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      0,
+                                      0,
+                                      0,
+                                      50,
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        VisibilityDetector(
+                                          key: const Key("favourites_desktop"),
+                                          child: Row(
+                                            children: [
+                                              const Text(
+                                                "Favourites",
+                                                style: TextStyle(
+                                                  fontSize: 36,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.fromLTRB(
+                                                      6,
+                                                      8,
+                                                      0,
+                                                      0,
+                                                    ),
+                                                child: IconButton(
+                                                  onPressed: () {},
+                                                  icon: const Icon(
+                                                    Icons.edit_rounded,
+                                                    size: 24,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          onVisibilityChanged: (visibilityInfo) {
+                                            if (!mounted) return;
+                                            setState(() {
+                                              _showAppBar =
+                                                  visibilityInfo
+                                                              .visibleFraction *
+                                                          100 <=
+                                                      0
+                                                  ? true
+                                                  : false;
+                                            });
+                                          },
+                                        ),
+                                        const SizedBox(height: 20),
+                                        ColoredBox(
+                                          color: Colors.transparent,
+                                          child: SizedBox(
+                                            width: 260,
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                Transform.scale(
+                                                  scale: 0.9,
+                                                  child: ElevatedButton.icon(
+                                                    onPressed: () => _playAll(
+                                                      shuffle: false,
+                                                    ),
+                                                    label: Padding(
+                                                      padding:
+                                                          const EdgeInsets.fromLTRB(
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            2,
+                                                          ),
+                                                      child: Text(
+                                                        "Play",
+                                                        style: TextStyle(
+                                                          color:
+                                                              setContainerContrastColor(
+                                                                context,
+                                                              ),
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    icon: SvgPicture.asset(
+                                                      "assets/MusicIcons/play.svg",
+                                                      width: 12,
+                                                      height: 12,
+                                                      colorFilter: ColorFilter.mode(
+                                                        setContainerContrastColor(
+                                                          context,
+                                                        ),
+                                                        BlendMode.srcIn,
+                                                      ),
+                                                    ),
+                                                    style: ElevatedButton.styleFrom(
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              8,
+                                                            ),
+                                                      ),
+                                                      backgroundColor:
+                                                          Theme.of(context)
+                                                              .buttonTheme
+                                                              .colorScheme
+                                                              ?.primary,
+                                                      fixedSize: const Size(
+                                                        120,
+                                                        30,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Transform.scale(
+                                                  scale: 0.9,
+                                                  child: ElevatedButton.icon(
+                                                    onPressed: () =>
+                                                        _playAll(shuffle: true),
+                                                    label: Padding(
+                                                      padding:
+                                                          const EdgeInsets.fromLTRB(
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            2,
+                                                          ),
+                                                      child: Text(
+                                                        "Shuffle",
+                                                        style: TextStyle(
+                                                          color:
+                                                              setContainerColor(
+                                                                context,
+                                                              ),
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    icon: SvgPicture.asset(
+                                                      "assets/MusicIcons/shuffle.svg",
+                                                      width: 12,
+                                                      height: 12,
+                                                      colorFilter:
+                                                          ColorFilter.mode(
+                                                            setContainerColor(
+                                                              context,
+                                                            ),
+                                                            BlendMode.srcIn,
+                                                          ),
+                                                    ),
+                                                    style: ElevatedButton.styleFrom(
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              8,
+                                                            ),
+                                                      ),
+                                                      backgroundColor:
+                                                          setContainerContrastColor(
+                                                            context,
+                                                          ),
+                                                      fixedSize: const Size(
+                                                        120,
+                                                        30,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
+                      );
+                    },
+                  ),
+                ),
+                if (_isLoading)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  )
+                else if (_songs == null || _songs!.isEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 48),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.favorite_border_rounded,
+                              size: 56,
+                              color: Colors.grey.withValues(alpha: 0.5),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              "No favourite songs yet",
+                              style: TextStyle(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.color
+                                    ?.withValues(alpha: 0.7),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                else if (isDesktop)
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: SliverGrid.extent(
+                      maxCrossAxisExtent: 400,
+                      childAspectRatio: 4,
+                      mainAxisSpacing: 5,
+                      crossAxisSpacing: 5,
+                      children: List.generate(_songs!.length, (index) {
+                        return SongView.grid(
+                          song: _songs![index],
+                          index: index,
+                          allSongs: _songs,
+                        );
+                      }),
+                    ),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    sliver: SliverList.separated(
+                      itemCount: _songs!.length,
+                      separatorBuilder: (context, index) {
+                        return Container(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withValues(alpha: 0.3),
+                          child: const Divider(height: 1, thickness: 0.2),
+                        );
+                      },
+                      itemBuilder: (context, index) {
+                        final isFirst = index == 0;
+                        final isLast = index == _songs!.length - 1;
+                        final borderRadius = BorderRadius.vertical(
+                          top: isFirst
+                              ? const Radius.circular(12)
+                              : Radius.zero,
+                          bottom: isLast
+                              ? const Radius.circular(12)
+                              : Radius.zero,
+                        );
+
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withValues(alpha: 0.3),
+                            borderRadius: borderRadius,
+                          ),
+                          clipBehavior: (isFirst || isLast)
+                              ? Clip.antiAlias
+                              : Clip.none,
+                          child: SongView.tile(
+                            song: _songs![index],
+                            index: index,
+                            allSongs: _songs,
+                          ),
+                        );
+                      },
                     ),
                   ),
-                );
-              },
+                const SliverToBoxAdapter(child: SizedBox(height: 120)),
+              ],
             ),
-          ),
-          if (_isLoading)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 40),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            )
-          else if (_songs == null || _songs!.isEmpty)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 48),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.favorite_border_rounded,
-                        size: 56,
-                        color: Colors.grey.withValues(alpha: 0.5),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        "No favourite songs yet",
-                        style: TextStyle(
-                          color: Theme.of(
+            // Bottom gradient fade
+            Positioned(
+              bottom: 0,
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  opacity: _isGradientVisible ? 1.0 : 0.0,
+                  child: Container(
+                    height: 80,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(
                             context,
-                          ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
+                          ).scaffoldBackgroundColor.withValues(alpha: 0),
+                          Theme.of(
+                            context,
+                          ).scaffoldBackgroundColor.withValues(alpha: 0.8),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            )
-          else if (isDesktop)
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverGrid.extent(
-                maxCrossAxisExtent: 400,
-                childAspectRatio: 4,
-                mainAxisSpacing: 5,
-                crossAxisSpacing: 5,
-                children: List.generate(_songs!.length, (index) {
-                  return SongView.grid(
-                    song: _songs![index],
-                    index: index,
-                    allSongs: _songs,
-                  );
-                }),
-              ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              sliver: SliverList.separated(
-                itemCount: _songs!.length,
-                separatorBuilder: (context, index) {
-                  return Container(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.3),
-                    child: const Divider(height: 1, thickness: 0.2),
-                  );
-                },
-                itemBuilder: (context, index) {
-                  final isFirst = index == 0;
-                  final isLast = index == _songs!.length - 1;
-                  final borderRadius = BorderRadius.vertical(
-                    top: isFirst ? const Radius.circular(12) : Radius.zero,
-                    bottom: isLast ? const Radius.circular(12) : Radius.zero,
-                  );
-
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest
-                          .withValues(alpha: 0.3),
-                      borderRadius: borderRadius,
-                    ),
-                    clipBehavior: (isFirst || isLast)
-                        ? Clip.antiAlias
-                        : Clip.none,
-                    child: SongView.tile(
-                      song: _songs![index],
-                      index: index,
-                      allSongs: _songs,
-                    ),
-                  );
-                },
-              ),
             ),
-          const SliverToBoxAdapter(child: SizedBox(height: 120)),
-        ],
+          ],
+        ),
       ),
     );
   }

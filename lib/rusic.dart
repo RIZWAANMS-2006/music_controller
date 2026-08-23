@@ -416,8 +416,10 @@ class CompactScreenState extends State<CompactScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       PhysicalModel(
-                        color: Colors.black,
-                        elevation: 15,
+                        color: Colors.transparent,
+                        // shadowColor: Colors.red,
+                        shadowColor : setContainerColor(context),
+                        elevation: 10,
                         borderRadius: const BorderRadius.all(
                           Radius.circular(30),
                         ),

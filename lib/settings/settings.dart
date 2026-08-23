@@ -5,6 +5,7 @@ import 'package:Rusic/settings/server_screens/server_configuration_screen.dart';
 import 'package:Rusic/settings/supabase_screens/supabase_configuration_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:toastification/toastification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,6 +19,7 @@ class Settings extends StatefulWidget {
 class _SettingsState extends State<Settings> {
   final GlobalKey<NavigatorState> _settingsNavigatorKey =
       GlobalKey<NavigatorState>();
+  bool _isGradientVisible = true;
 
   @override
   Widget build(BuildContext context) {
@@ -38,91 +40,114 @@ class _SettingsState extends State<Settings> {
     // the layout changes internally below.
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Stack(
-        children: [
-          ScrollConfiguration(
-            behavior: ScrollConfiguration.of(
-              context,
-            ).copyWith(scrollbars: false),
-            child: CustomScrollView(
-              slivers: [
-                CupertinoSliverNavigationBar(
-                  stretch: true,
-                  alwaysShowMiddle: false,
-                  border: Border(
-                    bottom: BorderSide(color: setAppBarBorderColor(context)),
-                  ),
-                  backgroundColor: setAppBarColor(context),
-                  largeTitle: Text(
-                    "Settings",
-                    style: TextStyle(
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
+      body: NotificationListener<UserScrollNotification>(
+        onNotification: (notification) {
+          if (notification.direction == ScrollDirection.reverse) {
+            if (_isGradientVisible) {
+              setState(() {
+                _isGradientVisible = false;
+              });
+            }
+          } else if (notification.direction == ScrollDirection.forward) {
+            if (!_isGradientVisible) {
+              setState(() {
+                _isGradientVisible = true;
+              });
+            }
+          }
+          return false;
+        },
+        child: Stack(
+          children: [
+            ScrollConfiguration(
+              behavior: ScrollConfiguration.of(
+                context,
+              ).copyWith(scrollbars: false),
+              child: CustomScrollView(
+                slivers: [
+                  CupertinoSliverNavigationBar(
+                    stretch: true,
+                    alwaysShowMiddle: false,
+                    border: Border(
+                      bottom: BorderSide(color: setAppBarBorderColor(context)),
+                    ),
+                    backgroundColor: setAppBarColor(context),
+                    largeTitle: Text(
+                      "Settings",
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
                     ),
                   ),
-                ),
-                const SliverPadding(
-                  padding: EdgeInsets.fromLTRB(10, 20, 10, 10),
-                  sliver: SliverToBoxAdapter(child: UnifiedSettingsScreen()),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20.0),
-                    child: Center(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red.withValues(alpha: 0.8),
-                          foregroundColor: Colors.white,
+                  const SliverPadding(
+                    padding: EdgeInsets.fromLTRB(10, 20, 10, 10),
+                    sliver: SliverToBoxAdapter(child: UnifiedSettingsScreen()),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20.0),
+                      child: Center(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.withValues(alpha: 0.8),
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () async {
+                            // 1. Clear FlutterSecureStorage
+                            final credentialsManager = CredentialsManager();
+                            await credentialsManager.clearAll();
+
+                            // 2. Clear SharedPreferences
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.clear();
+
+                            if (context.mounted) {
+                              showToast(
+                                context,
+                                "All app data has been cleared.",
+                              );
+                            }
+                          },
+                          child: const Text("Clear All App Data"),
                         ),
-                        onPressed: () async {
-                          // 1. Clear FlutterSecureStorage
-                          final credentialsManager = CredentialsManager();
-                          await credentialsManager.clearAll();
-
-                          // 2. Clear SharedPreferences
-                          final prefs = await SharedPreferences.getInstance();
-                          await prefs.clear();
-
-                          if (context.mounted) {
-                            showToast(
-                              context,
-                              "All app data has been cleared.",
-                            );
-                          }
-                        },
-                        child: const Text("Clear All App Data"),
+                      ),
+                    ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 80)),
+                ],
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  opacity: _isGradientVisible ? 1.0 : 0.0,
+                  child: Container(
+                    height: 100,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(
+                            context,
+                          ).scaffoldBackgroundColor.withValues(alpha: 0.0),
+                          Theme.of(
+                            context,
+                          ).scaffoldBackgroundColor.withValues(alpha: 0.8),
+                          Theme.of(context).scaffoldBackgroundColor,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
                       ),
                     ),
                   ),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 80)),
-              ],
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            child: IgnorePointer(
-              child: Container(
-                height: 100,
-                width: MediaQuery.of(context).size.width,
-                // decoration: BoxDecoration(
-                  // gradient: LinearGradient(
-                  //   colors: [
-                  //     Theme.of(
-                  //       context,
-                  //     ).scaffoldBackgroundColor.withValues(alpha: 0.0),
-                  //     Theme.of(
-                  //       context,
-                  //     ).scaffoldBackgroundColor.withValues(alpha: 0.8),
-                  //     Theme.of(context).scaffoldBackgroundColor,
-                  //   ],
-                  //   begin: Alignment.topCenter,
-                  //   end: Alignment.bottomCenter,
-                  // ),
-                // ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
